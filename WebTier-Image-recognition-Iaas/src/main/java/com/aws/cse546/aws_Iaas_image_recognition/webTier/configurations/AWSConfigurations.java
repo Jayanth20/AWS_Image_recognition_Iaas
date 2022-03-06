@@ -1,4 +1,7 @@
-package com.aws.cse546.aws_Iaas_image_recognition.configurations;
+package com.aws.cse546.aws_Iaas_image_recognition.webTier.configurations;
+
+import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
@@ -7,9 +10,9 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
-import com.aws.cse546.aws_Iaas_image_recognition.constants.ProjectConstant;
+import com.aws.cse546.aws_Iaas_image_recognition.webTier.constants.ProjectConstant;
 
-
+@Configuration
 public class AWSConfigurations {
 
 	public AmazonSQS getSQSService() {

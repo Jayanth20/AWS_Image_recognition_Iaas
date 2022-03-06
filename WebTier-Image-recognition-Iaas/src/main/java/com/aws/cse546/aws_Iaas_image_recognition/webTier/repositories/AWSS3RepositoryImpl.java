@@ -1,13 +1,15 @@
-package com.aws.cse546.aws_Iaas_image_recognition.repositories;
+package com.aws.cse546.aws_Iaas_image_recognition.webTier.repositories;
 
 import java.io.File;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.aws.cse546.aws_Iaas_image_recognition.configurations.AWSConfigurations;
-import com.aws.cse546.aws_Iaas_image_recognition.constants.ProjectConstant;
+import com.aws.cse546.aws_Iaas_image_recognition.webTier.configurations.AWSConfigurations;
+import com.aws.cse546.aws_Iaas_image_recognition.webTier.constants.ProjectConstant;
 
+@Repository
 public class AWSS3RepositoryImpl implements AWSS3Repository {
 	
 	@Autowired

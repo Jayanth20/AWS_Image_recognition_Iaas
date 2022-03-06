@@ -1,4 +1,4 @@
-package com.aws.cse546.aws_Iaas_image_recognition.controllers;
+package com.aws.cse546.aws_Iaas_image_recognition.webTier.controllers;
 
 import java.io.File;
 import java.util.HashMap;
@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.aws.cse546.aws_Iaas_image_recognition.constants.ProjectConstant;
-import com.aws.cse546.aws_Iaas_image_recognition.services.AWSService;
-import com.aws.cse546.aws_Iaas_image_recognition.services.ImageRecognitionWebTierService;
+import com.aws.cse546.aws_Iaas_image_recognition.webTier.constants.ProjectConstant;
+import com.aws.cse546.aws_Iaas_image_recognition.webTier.services.AWSService;
+import com.aws.cse546.aws_Iaas_image_recognition.webTier.services.ImageRecognitionWebTierService;
 
 
 @RestController
@@ -38,14 +38,14 @@ public class ImageRecognitionAPIs {
 		for(MultipartFile file: files) {
 			String fileName = webTierService.createUniqueFileName(file);
 			awsService.uploadFileToS3(webTierService.convertMultiPartToFile(file), fileName);
-			awsService.queueInputRequest(fileName, ProjectConstant.INPUT_QUEUE, 0);
+//			awsService.queueInputRequest(fileName, ProjectConstant.INPUT_QUEUE, 0);
 			imageSet.add(fileName);
 		}
 		
-		for(String fileName: imageSet) {
-			String[] result = awsService.getOutputFromResponseQueue(fileName);
-			recognitionResult.put(result[0], result[1]);
-		}
+//		for(String fileName: imageSet) {
+//			String[] result = awsService.getOutputFromResponseQueue(fileName);
+//			recognitionResult.put(result[0], result[1]);
+//		}
 		return recognitionResult;
 	}
 	

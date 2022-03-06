@@ -1,4 +1,4 @@
-package com.aws.cse546.aws_Iaas_image_recognition.repositories;
+package com.aws.cse546.aws_Iaas_image_recognition.webTier.repositories;
 
 import java.io.File;
 

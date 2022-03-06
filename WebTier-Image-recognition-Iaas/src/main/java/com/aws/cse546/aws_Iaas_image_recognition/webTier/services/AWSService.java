@@ -1,4 +1,4 @@
-package com.aws.cse546.aws_Iaas_image_recognition.services;
+package com.aws.cse546.aws_Iaas_image_recognition.webTier.services;
 
 import java.io.File;
 import java.util.UUID;
@@ -12,22 +12,21 @@ import org.springframework.web.multipart.MultipartFile;
 import com.amazonaws.services.sqs.model.CreateQueueRequest;
 import com.amazonaws.services.sqs.model.QueueAttributeName;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
-import com.aws.cse546.aws_Iaas_image_recognition.configurations.AWSConfigurations;
-import com.aws.cse546.aws_Iaas_image_recognition.repositories.AWSS3Repository;
-import com.aws.cse546.aws_Iaas_image_recognition.webTier.WebTierApplication;
+import com.aws.cse546.aws_Iaas_image_recognition.webTier.configurations.AWSConfigurations;
+import com.aws.cse546.aws_Iaas_image_recognition.webTier.repositories.AWSS3Repository;
 
 
 
 @Service
 public class AWSService implements Runnable{
-	
-	@Autowired
-	private AWSConfigurations awsConfigurations;
 
 	@Autowired
 	private AWSS3Repository s3Repo;
 	
 	public static Logger logger = LoggerFactory.getLogger(AWSService.class);
+	
+	@Autowired
+	private AWSConfigurations awsConfigurations;
 	
 	@Override
 	public void run() {
@@ -83,7 +82,7 @@ public class AWSService implements Runnable{
 
 	public String[] getOutputFromResponseQueue(String imageUrl) {
 //		logger.info("ImageURL: ()", imageUrl);
-
+		
 		return null;
 	}
 

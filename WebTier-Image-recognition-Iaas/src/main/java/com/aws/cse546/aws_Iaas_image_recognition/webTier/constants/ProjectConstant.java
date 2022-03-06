@@ -1,4 +1,4 @@
-package com.aws.cse546.aws_Iaas_image_recognition.constants;
+package com.aws.cse546.aws_Iaas_image_recognition.webTier.constants;
 
 import com.amazonaws.regions.Regions;
 
@@ -16,6 +16,6 @@ public class ProjectConstant {
 
 	public static final Regions AWS_REGION = Regions.US_EAST_1;
 
-	public static final String INPUT_BUCKET = "image-input-bucket-CSE546-version-1";
+	public static final String INPUT_BUCKET = "image-input-bucket-cse546-version-1";
 	
 }

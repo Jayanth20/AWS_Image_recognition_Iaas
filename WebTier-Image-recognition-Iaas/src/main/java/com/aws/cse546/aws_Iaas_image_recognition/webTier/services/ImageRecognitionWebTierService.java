@@ -1,4 +1,4 @@
-package com.aws.cse546.aws_Iaas_image_recognition.services;
+package com.aws.cse546.aws_Iaas_image_recognition.webTier.services;
 
 import java.io.File;
 import java.io.FileOutputStream;
