@@ -6,6 +6,8 @@ import org.springframework.stereotype.Component;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.services.ec2.AmazonEC2;
+import com.amazonaws.services.ec2.AmazonEC2ClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.sqs.AmazonSQS;
@@ -27,6 +29,11 @@ public class AWSConfigurations {
 	public AmazonS3 getS3() {
 		return AmazonS3ClientBuilder.standard().withCredentials(new AWSStaticCredentialsProvider(basicAWSCredentials()))
                 .withRegion(ProjectConstant.AWS_REGION).build();
+	}
+
+	public AmazonEC2 getEC2Service() {
+		return AmazonEC2ClientBuilder.standard().withCredentials(new AWSStaticCredentialsProvider(basicAWSCredentials())).
+                withRegion(ProjectConstant.AWS_REGION).build();
 	}
 
 }
