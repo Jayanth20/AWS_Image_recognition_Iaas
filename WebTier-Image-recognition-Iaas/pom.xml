@@ -5,6 +5,9 @@
     <artifactId>AWS_Image_recognition_Iaas</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
+	<properties>
+    	<aws.java.sdk.version>2.16.1</aws.java.sdk.version>
+  	</properties>
   <artifactId>WebTier-Image-recognition-Iaas</artifactId>
   <description>Cloud Computing Project 1 - Web Tier</description>
 	<dependencies>
@@ -14,6 +17,7 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+
 		<!-- Spring boot testing-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -21,13 +25,23 @@
             <scope>test</scope>
         </dependency>
 
-		<!-- AWS SDK for JAVA -->
+		<!-- AWS SDK for JAVA: Build the entire SDK into your project-->
+		<!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk -->
 		<dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk</artifactId>
-            <version>1.11.288</version>
-            <scope>compile</scope>
-        </dependency>
+		    <groupId>com.amazonaws</groupId>
+		    <artifactId>aws-java-sdk</artifactId>
+		    <version>1.12.172</version>
+		</dependency>
+
+		<!-- Use what is required -->
+		<!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-sqs -->
+		<dependency>
+		    <groupId>com.amazonaws</groupId>
+		    <artifactId>aws-java-sdk-sqs</artifactId>
+		    <version>1.12.172</version>
+		</dependency>
+
+
 
 		<dependency>
             <groupId>org.springframework.boot</groupId>
@@ -35,7 +49,6 @@
             <scope>runtime</scope>
             <optional>true</optional>
         </dependency>
-
 
 
 	</dependencies>

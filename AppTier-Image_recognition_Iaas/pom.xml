@@ -21,13 +21,13 @@
             <scope>test</scope>
         </dependency>
 
-		<!-- AWS SDK for JAVA -->
+		<!-- AWS SDK for JAVA: Build the entire SDK into your project (Ideally not neccessary but doing)-->
+		<!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk -->
 		<dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk</artifactId>
-            <version>1.11.288</version>
-            <scope>compile</scope>
-        </dependency>
+		    <groupId>com.amazonaws</groupId>
+		    <artifactId>aws-java-sdk</artifactId>
+		    <version>1.12.172</version>
+		</dependency>
 
 		<dependency>
             <groupId>org.springframework.boot</groupId>
