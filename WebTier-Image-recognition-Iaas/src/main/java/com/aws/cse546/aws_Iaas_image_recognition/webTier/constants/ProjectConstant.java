@@ -17,6 +17,8 @@ public class ProjectConstant {
 
 	// secretKey - The AWS secret access key.
 	public static final String SECRET_ACCESS_KEY = "";
+	
+	public static final String PRIVATE_KEY = "";
 
 	public static final Regions AWS_REGION = Regions.US_EAST_1;
 
@@ -33,5 +35,19 @@ public class ProjectConstant {
 	public static final String TOTAL_MSG_IN_SQS_NOT_VISIBLE = "ApproximateNumberOfMessagesNotVisible";
 
 	public static final List<String> SQS_METRICS = new ArrayList<String>(Arrays.asList(TOTAL_MSG_IN_SQS,TOTAL_MSG_IN_SQS_NOT_VISIBLE));
+	
+	public static final String TAG_KEY = "AppTier";
+
+	public static final String TAG_VALUE = "App Instance";
+
+	public static final String RESOURCE_INSTANCE = "instance";
+
+	public static final String USER_DATA = "#!/bin/bash" + "\n" + "cd /home/ubuntu/classifier" + "\n"
+			+ "chmod +x AppTier-Image_recognition_Iaas-0.0.1-SNAPSHOT.jar" + "\n" + "java -jar AppTier-Image_recognition_Iaas-0.0.1-SNAPSHOT.jar"; //User data passed on instance creation to perform some task as soon as instance start.
+
+	public static final Integer MAX_WAIT_TIME_OUT = 20;
+
+	public static final String INPUT_OUTPUT_SEPARATOR = "---";
+	
 	
 }

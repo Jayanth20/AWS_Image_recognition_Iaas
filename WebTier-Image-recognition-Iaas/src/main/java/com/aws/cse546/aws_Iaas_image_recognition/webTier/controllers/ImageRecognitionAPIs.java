@@ -29,7 +29,8 @@ public class ImageRecognitionAPIs {
 	
 	@PostMapping("/imagesRecognition/Upload")
 	public Map<String, String> getNameFromImage(@RequestParam(name = "imageurl", required = true) MultipartFile[] files){
-		
+		// App to Web tier
+		// If you provide the name of an existing queue along with the exact names and values of all the queue's attributes, CreateQueue returns the queue URL for the existing queue.
 		awsService.createQueue(ProjectConstant.OUTPUT_QUEUE);
 		
 		Set<String> imageSet = new HashSet<>(); 
@@ -38,14 +39,15 @@ public class ImageRecognitionAPIs {
 		for(MultipartFile file: files) {
 			String fileName = webTierService.createUniqueFileName(file);
 			awsService.uploadFileToS3(webTierService.convertMultiPartToFile(file), fileName);
-//			awsService.queueInputRequest(fileName, ProjectConstant.INPUT_QUEUE, 0);
+			// Web to App tier
+			awsService.queueInputRequest(fileName, ProjectConstant.INPUT_QUEUE, 0);
 			imageSet.add(fileName);
 		}
 		
-//		for(String fileName: imageSet) {
-//			String[] result = awsService.getOutputFromResponseQueue(fileName);
-//			recognitionResult.put(result[0], result[1]);
-//		}
+		for(String fileName: imageSet) {
+			String[] result = webTierService.getOutputFromResponseQueue(fileName);
+			recognitionResult.put(result[0], result[1]);
+		}
 		return recognitionResult;
 	}
 	

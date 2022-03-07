@@ -1,6 +1,8 @@
 package com.aws.cse546.aws_Iaas_image_recognition.webTier.services;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -14,10 +16,18 @@ import com.amazonaws.services.ec2.model.DescribeInstanceStatusRequest;
 import com.amazonaws.services.ec2.model.DescribeInstanceStatusResult;
 import com.amazonaws.services.ec2.model.InstanceStateName;
 import com.amazonaws.services.ec2.model.InstanceStatus;
+import com.amazonaws.services.ec2.model.RunInstancesRequest;
+import com.amazonaws.services.ec2.model.Tag;
+import com.amazonaws.services.ec2.model.TagSpecification;
 import com.amazonaws.services.sqs.model.CreateQueueRequest;
+import com.amazonaws.services.sqs.model.DeleteMessageRequest;
 import com.amazonaws.services.sqs.model.GetQueueAttributesRequest;
+import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.QueueAttributeName;
+import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
+import com.amazonaws.services.sqs.model.ReceiveMessageResult;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
+import com.amazonaws.util.Base64;
 import com.aws.cse546.aws_Iaas_image_recognition.webTier.configurations.AWSConfigurations;
 import com.aws.cse546.aws_Iaas_image_recognition.webTier.constants.ProjectConstant;
 import com.aws.cse546.aws_Iaas_image_recognition.webTier.repositories.AWSS3Repository;
@@ -56,7 +66,7 @@ public class AWSService implements Runnable{
 			logger.info("Creating Queue with Name: {}", outputQueue);
 			
 			awsConfigurations.getSQSService().createQueue(createQueueRequest);
-
+			
 		} catch (Exception e) {
 			System.out.println("Error while creating queue: " + e.getMessage());
 		}
@@ -87,12 +97,6 @@ public class AWSService implements Runnable{
 				);
 	}
 
-	public String[] getOutputFromResponseQueue(String imageUrl) {
-//		logger.info("ImageURL: ()", imageUrl);
-		
-		return null;
-	}
-
 	
 	public void scaleOut() {
 		while (true) {
@@ -105,8 +109,12 @@ public class AWSService implements Runnable{
 			if (totalNumberOfAppInstancesRunning < totalNumberOfMsgInQueue) {
 				logger.info("**************** Required number instance are: {} ************", totalNumberOfMsgInQueue - totalNumberOfAppInstancesRunning);
 				logger.info("**************** Available (limit) number instance that can be triggered: {} ************", ProjectConstant.MAX_NUM_OF_APP_INSTANCES - totalNumberOfAppInstancesRunning);
-				if (ProjectConstant.MAX_NUM_OF_APP_INSTANCES - totalNumberOfAppInstancesRunning > 0) {
-					numberOfInstancesToRun = ProjectConstant.MAX_NUM_OF_APP_INSTANCES - totalNumberOfAppInstancesRunning;
+				if (totalNumberOfMsgInQueue
+						- totalNumberOfAppInstancesRunning < ProjectConstant.MAX_NUM_OF_APP_INSTANCES) {
+					numberOfInstancesToRun = totalNumberOfMsgInQueue - totalNumberOfAppInstancesRunning;
+				} else {
+					numberOfInstancesToRun = ProjectConstant.MAX_NUM_OF_APP_INSTANCES
+							- totalNumberOfAppInstancesRunning;
 				}
 			}
 			// number of instances to triggering
@@ -118,7 +126,7 @@ public class AWSService implements Runnable{
 			}
 			
 			try {
-				logger.info("**************** Timed Waiting AWSService thread: {} milli seconds  ****************", 2000);
+				logger.info("**************** Timed Waiting - AWSService thread: {} milli seconds  ****************", 2000);
 				Thread.sleep(2000);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -128,21 +136,55 @@ public class AWSService implements Runnable{
 
 	private void createAndRunInstance(String imageId, String instanceType, Integer requiredInstance) {
 		
+		try {
+			Integer maxInstances = requiredInstance;
+			Integer minInstances = 0;
+			if(maxInstances == 1) {
+				minInstances = 1;
+			}else {
+				minInstances = maxInstances - 1;
+			}
+			
+			// tags
+			Collection<Tag> tagsForAppInstance = new ArrayList<>();
+			TagSpecification ts = new TagSpecification();
+			Tag tag = new Tag();
+			tag.setKey(ProjectConstant.TAG_KEY);
+			tag.setValue(ProjectConstant.TAG_VALUE);
+			tagsForAppInstance.add(tag);
+			ts.setResourceType(ProjectConstant.RESOURCE_INSTANCE);
+			ts.setTags(tagsForAppInstance);
+
+			RunInstancesRequest runInstancesRequest = new RunInstancesRequest().withImageId(imageId)
+					.withInstanceType(instanceType).withMinCount(minInstances).withMaxCount(maxInstances)
+					.withKeyName(ProjectConstant.PRIVATE_KEY).withTagSpecifications(ts)
+					.withUserData(new String(Base64.encode(ProjectConstant.USER_DATA.getBytes("UTF-8")), "UTF-8"));
+
+			awsConfigurations.getEC2Service().runInstances(runInstancesRequest);
+		} catch (Exception e) {
+			logger.error("Error while creating instances");
+			e.printStackTrace();
+			return;
+		}
+		
 	}
 
 	private Integer getTotalNumOfInstances() {
+		logger.info("****************  Get All instances status ****************");
 		DescribeInstanceStatusRequest describeInstanceStatusRequest = new DescribeInstanceStatusRequest();
 		describeInstanceStatusRequest.setIncludeAllInstances(true);
 		DescribeInstanceStatusResult describeInstances = awsConfigurations.getEC2Service()
 				.describeInstanceStatus(describeInstanceStatusRequest);
 		List<InstanceStatus> instanceStatusList = describeInstances.getInstanceStatuses();
 		Integer total = 0;
-		for (InstanceStatus is : instanceStatusList)
+		for (InstanceStatus is : instanceStatusList) {
 			if (is.getInstanceState().getName().equals(InstanceStateName.Running.toString())
 					|| is.getInstanceState().getName().equals(InstanceStateName.Pending.toString()))
 				total++;
-
-		return total - 1;
+		}
+			
+		
+		return total;
 	}
 
 	private Integer getTotalNumberOfMessagesInQueue(String queueName) {
@@ -166,6 +208,45 @@ public class AWSService implements Runnable{
 		logger.info("**************** Total Number of Messages in Queue: {} **************** ", map.get(ProjectConstant.TOTAL_MSG_IN_SQS));
 		
 		return Integer.parseInt((String) map.get(ProjectConstant.TOTAL_MSG_IN_SQS));
+	}
+
+	public List<Message> receiveMessage(String queueName, Integer visibilityTimeout, Integer waitTimeOut, Integer maxNumOfMsg) {
+		try {
+			String queueUrl = awsConfigurations.getSQSService().getQueueUrl(queueName).getQueueUrl();
+			ReceiveMessageRequest receiveMessageRequest = new ReceiveMessageRequest(queueUrl);
+			receiveMessageRequest.setMaxNumberOfMessages(maxNumOfMsg);
+			receiveMessageRequest.setVisibilityTimeout(visibilityTimeout);
+			receiveMessageRequest.setWaitTimeSeconds(waitTimeOut);
+			ReceiveMessageResult receiveMessageResult = awsConfigurations.getSQSService()
+					.receiveMessage(receiveMessageRequest);
+			List<Message> messageList = receiveMessageResult.getMessages();
+			if (messageList.isEmpty()) {
+				logger.info("**************** No messages in output Queue!!! **************** ");
+				return null;
+			}
+			return messageList;
+		} catch (Exception e) {
+			logger.info("No Msg Available: " + e.getMessage());
+			logger.info("Thread sleeping 10sec");
+			try {
+				Thread.sleep(10000);
+			} catch (Exception p) {
+				logger.info("Thread not sleeping some error");
+			}
+			return null;
+		}
+	}
+
+	public void deleteMessage(Message message, String outputQueue) {
+		try {
+			String queueUrl = awsConfigurations.getSQSService().getQueueUrl(outputQueue).getQueueUrl();
+			String messageReceiptHandle = message.getReceiptHandle();
+			DeleteMessageRequest deleteMessageRequest = new DeleteMessageRequest(queueUrl, messageReceiptHandle);
+			awsConfigurations.getSQSService().deleteMessage(deleteMessageRequest);
+		} catch (Exception e) {
+			System.out.println("Error while deleting msg from: " + e.getMessage());
+		}
+		
 	}
 
 

@@ -3,13 +3,25 @@ package com.aws.cse546.aws_Iaas_image_recognition.webTier.services;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.amazonaws.services.sqs.model.Message;
+import com.aws.cse546.aws_Iaas_image_recognition.webTier.constants.ProjectConstant;
+
 @Service
 public class ImageRecognitionWebTierService implements Runnable {
+	
+	public static Logger logger = LoggerFactory.getLogger(ImageRecognitionWebTierService.class);
+	
+	@Autowired
+	private AWSService awsService;
 	
 	private Map<String, String> outputMap = new HashMap<>();
 	
@@ -21,8 +33,74 @@ public class ImageRecognitionWebTierService implements Runnable {
 		this.outputMap = outputMap;
 	}
 
+	
+	public String[] getOutputFromResponseQueue(String imageUrl) {
+		System.out.println("ImageURL: " + imageUrl);
+		while (true) {
+			try {
+				if (this.outputMap.containsKey(imageUrl)) {
+					String output = this.outputMap.get(imageUrl);
+					this.outputMap.remove(imageUrl);
+					return new String[] { this.formatImageUrl(imageUrl), output };
+				} else {
+					try {
+						Thread.sleep(8000);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			} catch (Exception e) {
+				System.out.println("Some Error while getting outPut from HashMap");
+				try {
+					Thread.sleep(8000);
+				} catch (Exception o) {
+					o.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	
+	public String formatImageUrl(String imageUrl) {
+		int firstIndex = imageUrl.indexOf('-');
+		int lastIndex = imageUrl.lastIndexOf('.');
+		return imageUrl.substring(firstIndex + 1, lastIndex);
+	}
+	
+	
 	@Override
 	public void run() {
+		logger.info("**************** Listening on the output Queue for messages from App **************** ");
+		this.putOutputFromResponseQueueToHashMap();
+	}
+
+	private void putOutputFromResponseQueueToHashMap() {
+		while (true) {
+			List<Message> msgList = null;
+			try {
+				msgList = awsService.receiveMessage(ProjectConstant.OUTPUT_QUEUE, 20, ProjectConstant.MAX_WAIT_TIME_OUT, 10);
+				if (msgList != null) {
+					try {
+						for (Message msg : msgList) {
+							String[] classificationResult = null;
+							classificationResult = msg.getBody().split(ProjectConstant.INPUT_OUTPUT_SEPARATOR);
+							outputMap.put(classificationResult[0], classificationResult[1]);
+							awsService.deleteMessage(msg, ProjectConstant.OUTPUT_QUEUE);
+						}
+					} catch (Exception w) {
+						logger.info("Error in putting message from queue to map");
+					}
+				}
+			} catch (Exception e) {
+				logger.info("No Msg Available: " + e.getMessage());
+				logger.info("Thread sleeping 10sec");
+				try {
+					Thread.sleep(10000);
+				} catch (Exception p) {
+					logger.info("Thread not sleeping some error");
+				}
+			}
+		}
 		
 	}
 
