@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.aws.cse546.aws_Iaas_image_recognition.webTier.configurations.AWSConfigurations;
-import com.aws.cse546.aws_Iaas_image_recognition.webTier.constants.ProjectConstant;
+import com.aws.cse546.aws_Iaas_image_recognition.webTier.constants.ProjectConstants;
 
 @Repository
 public class AWSS3RepositoryImpl implements AWSS3Repository {
@@ -18,9 +18,9 @@ public class AWSS3RepositoryImpl implements AWSS3Repository {
 	@Override
 	public void uploadFile(String fileName, File file) {
 		try {
-            if (!awsConfigurations.getS3().doesBucketExistV2(ProjectConstant.INPUT_BUCKET))
-                awsConfigurations.getS3().createBucket(ProjectConstant.INPUT_BUCKET);
-            awsConfigurations.getS3().putObject(new PutObjectRequest(ProjectConstant.INPUT_BUCKET, fileName, file));
+            if (!awsConfigurations.getS3().doesBucketExistV2(ProjectConstants.INPUT_BUCKET))
+                awsConfigurations.getS3().createBucket(ProjectConstants.INPUT_BUCKET);
+            awsConfigurations.getS3().putObject(new PutObjectRequest(ProjectConstants.INPUT_BUCKET, fileName, file));
         } catch (Exception e) {
             e.printStackTrace();
         }
