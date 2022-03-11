@@ -29,7 +29,7 @@ import com.amazonaws.services.sqs.model.ReceiveMessageResult;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.amazonaws.util.Base64;
 import com.aws.cse546.aws_Iaas_image_recognition.webTier.configurations.AWSConfigurations;
-import com.aws.cse546.aws_Iaas_image_recognition.webTier.constants.ProjectConstants;
+import com.aws.cse546.aws_Iaas_image_recognition.webTier.constants.ProjectConstant;
 import com.aws.cse546.aws_Iaas_image_recognition.webTier.repositories.AWSS3Repository;
 
 
@@ -101,19 +101,19 @@ public class AWSService implements Runnable{
 	public void scaleOut() {
 		while (true) {
 			// total Messages in queue
-			Integer totalNumberOfMsgInQueue = getTotalNumberOfMessagesInQueue(ProjectConstants.INPUT_QUEUE);
+			Integer totalNumberOfMsgInQueue = getTotalNumberOfMessagesInQueue(ProjectConstant.INPUT_QUEUE);
 			// Current number of running instances
 			Integer totalNumberOfAppInstancesRunning = getTotalNumOfInstances();
 			logger.info("**************** Current number of instance running: {} ************", totalNumberOfAppInstancesRunning);
 			Integer numberOfInstancesToRun = 0;
 			if (totalNumberOfAppInstancesRunning < totalNumberOfMsgInQueue) {
 				logger.info("**************** Required number instance are: {} ************", totalNumberOfMsgInQueue - totalNumberOfAppInstancesRunning);
-				logger.info("**************** Available (limit) number instance that can be triggered: {} ************", ProjectConstants.MAX_NUM_OF_APP_INSTANCES - totalNumberOfAppInstancesRunning);
+				logger.info("**************** Available (limit) number instance that can be triggered: {} ************", ProjectConstant.MAX_NUM_OF_APP_INSTANCES - totalNumberOfAppInstancesRunning);
 				if (totalNumberOfMsgInQueue
-						- totalNumberOfAppInstancesRunning < ProjectConstants.MAX_NUM_OF_APP_INSTANCES) {
+						- totalNumberOfAppInstancesRunning < ProjectConstant.MAX_NUM_OF_APP_INSTANCES) {
 					numberOfInstancesToRun = totalNumberOfMsgInQueue - totalNumberOfAppInstancesRunning;
 				} else {
-					numberOfInstancesToRun = ProjectConstants.MAX_NUM_OF_APP_INSTANCES
+					numberOfInstancesToRun = ProjectConstant.MAX_NUM_OF_APP_INSTANCES
 							- totalNumberOfAppInstancesRunning;
 				}
 			}
@@ -121,7 +121,7 @@ public class AWSService implements Runnable{
 			logger.info("**************** Create {} number of new instances ****************", numberOfInstancesToRun);
 
 			if (numberOfInstancesToRun > 0) {
-				createAndRunInstance(ProjectConstants.AMI_ID, ProjectConstants.INSTANCE_TYPE, 
+				createAndRunInstance(ProjectConstant.AMI_ID, ProjectConstant.INSTANCE_TYPE, 
 						numberOfInstancesToRun);
 			}
 			
@@ -149,16 +149,16 @@ public class AWSService implements Runnable{
 			Collection<Tag> tagsForAppInstance = new ArrayList<>();
 			TagSpecification ts = new TagSpecification();
 			Tag tag = new Tag();
-			tag.setKey(ProjectConstants.TAG_KEY);
-			tag.setValue(ProjectConstants.TAG_VALUE);
+			tag.setKey(ProjectConstant.TAG_KEY);
+			tag.setValue(ProjectConstant.TAG_VALUE);
 			tagsForAppInstance.add(tag);
-			ts.setResourceType(ProjectConstants.RESOURCE_INSTANCE);
+			ts.setResourceType(ProjectConstant.RESOURCE_INSTANCE);
 			ts.setTags(tagsForAppInstance);
 
 			RunInstancesRequest runInstancesRequest = new RunInstancesRequest().withImageId(imageId)
 					.withInstanceType(instanceType).withMinCount(minInstances).withMaxCount(maxInstances)
-					.withKeyName(ProjectConstants.PRIVATE_KEY).withTagSpecifications(ts)
-					.withUserData(new String(Base64.encode(ProjectConstants.USER_DATA.getBytes("UTF-8")), "UTF-8"));
+					.withKeyName(ProjectConstant.PRIVATE_KEY).withTagSpecifications(ts)
+					.withUserData(new String(Base64.encode(ProjectConstant.USER_DATA.getBytes("UTF-8")), "UTF-8"));
 
 			awsConfigurations.getEC2Service().runInstances(runInstancesRequest);
 		} catch (Exception e) {
@@ -199,15 +199,15 @@ public class AWSService implements Runnable{
 		queueUrl = awsConfigurations.getSQSService().getQueueUrl(queueName).getQueueUrl();
 		
 		GetQueueAttributesRequest getQueueAttributesRequest = new GetQueueAttributesRequest(queueUrl,
-				ProjectConstants.SQS_METRICS);
+				ProjectConstant.SQS_METRICS);
 		
 		logger.info("**************** Getting Queue Attributes **************** ");
 		Map<String, String> map = awsConfigurations.getSQSService().getQueueAttributes(getQueueAttributesRequest)
 				.getAttributes();
 		
-		logger.info("**************** Total Number of Messages in Queue: {} **************** ", map.get(ProjectConstants.TOTAL_MSG_IN_SQS));
+		logger.info("**************** Total Number of Messages in Queue: {} **************** ", map.get(ProjectConstant.TOTAL_MSG_IN_SQS));
 		
-		return Integer.parseInt((String) map.get(ProjectConstants.TOTAL_MSG_IN_SQS));
+		return Integer.parseInt((String) map.get(ProjectConstant.TOTAL_MSG_IN_SQS));
 	}
 
 	public List<Message> receiveMessage(String queueName, Integer visibilityTimeout, Integer waitTimeOut, Integer maxNumOfMsg) {

@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.amazonaws.services.sqs.model.Message;
-import com.aws.cse546.aws_Iaas_image_recognition.webTier.constants.ProjectConstants;
+import com.aws.cse546.aws_Iaas_image_recognition.webTier.constants.ProjectConstant;
 
 @Service
 public class ImageRecognitionWebTierService implements Runnable {
@@ -78,14 +78,14 @@ public class ImageRecognitionWebTierService implements Runnable {
 		while (true) {
 			List<Message> msgList = null;
 			try {
-				msgList = awsService.receiveMessage(ProjectConstants.OUTPUT_QUEUE, 20, ProjectConstants.MAX_WAIT_TIME_OUT, 10);
+				msgList = awsService.receiveMessage(ProjectConstant.OUTPUT_QUEUE, 20, ProjectConstant.MAX_WAIT_TIME_OUT, 10);
 				if (msgList != null) {
 					try {
 						for (Message msg : msgList) {
 							String[] classificationResult = null;
-							classificationResult = msg.getBody().split(ProjectConstants.INPUT_OUTPUT_SEPARATOR);
+							classificationResult = msg.getBody().split(ProjectConstant.INPUT_OUTPUT_SEPARATOR);
 							outputMap.put(classificationResult[0], classificationResult[1]);
-							awsService.deleteMessage(msg, ProjectConstants.OUTPUT_QUEUE);
+							awsService.deleteMessage(msg, ProjectConstant.OUTPUT_QUEUE);
 						}
 					} catch (Exception w) {
 						logger.info("Error in putting message from queue to map");
