@@ -6,7 +6,7 @@ import java.util.List;
 
 import com.amazonaws.regions.Regions;
 
-public class ProjectConstant {
+public class ProjectConstants {
 
 	public static final String INPUT_QUEUE = "inputQueue.fifo";
 
@@ -18,7 +18,7 @@ public class ProjectConstant {
 	// secretKey - The AWS secret access key.
 	public static final String SECRET_ACCESS_KEY = "";
 	
-	public static final String PRIVATE_KEY = "";
+	public static final String PRIVATE_KEY = "my_key_pair";
 
 	public static final Regions AWS_REGION = Regions.US_EAST_1;
 
