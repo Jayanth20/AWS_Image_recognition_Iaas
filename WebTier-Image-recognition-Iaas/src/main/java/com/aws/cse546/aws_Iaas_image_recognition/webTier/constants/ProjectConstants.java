@@ -26,7 +26,7 @@ public class ProjectConstants {
 	
 	public static final Integer MAX_NUM_OF_APP_INSTANCES = 19;
 	
-	public static final String AMI_ID = "ami-0e0d6ce25c65da960"; 
+	public static final String AMI_ID = "ami-0a55e620aa5c79a24"; 
 	
 	public static final String INSTANCE_TYPE = "t2.micro";
 	
@@ -42,8 +42,9 @@ public class ProjectConstants {
 
 	public static final String RESOURCE_INSTANCE = "instance";
 
-	public static final String USER_DATA = "#!/bin/bash" + "\n" + "cd /home/ubuntu/classifier" + "\n"
-			+ "chmod +x AppTier-Image_recognition_Iaas-0.0.1-SNAPSHOT.jar" + "\n" + "java -jar AppTier-Image_recognition_Iaas-0.0.1-SNAPSHOT.jar"; //User data passed on instance creation to perform some task as soon as instance start.
+	public static final String USER_DATA = "#!/bin/bash" + "\n" + "cd /home/ec2-user/" + "\n"
+			+ "chmod +x AppTier-Image_recognition_Iaas-0.0.1-SNAPSHOT.jar" + "\n" + "java -jar AppTier-Image_recognition_Iaas-0.0.1-SNAPSHOT.jar"; 
+	//User data passed on instance creation to perform some task as soon as instance start.
 
 	public static final Integer MAX_WAIT_TIME_OUT = 20;
 

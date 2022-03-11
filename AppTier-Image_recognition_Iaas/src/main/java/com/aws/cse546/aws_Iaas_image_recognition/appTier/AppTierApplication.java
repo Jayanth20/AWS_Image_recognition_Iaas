@@ -30,7 +30,7 @@ public class AppTierApplication {
 			if (ProjectConstants.MAX_NUM_OF_APP_INSTANCES < TOTAL_NUMBER_OF_MSG_IN_INPUT_QUEUE) 
 				NUMBER_OF_THREAD = TOTAL_NUMBER_OF_MSG_IN_INPUT_QUEUE / ProjectConstants.MAX_NUM_OF_APP_INSTANCES;
 			
-			// If estimated number of threads in each App instance excceds Max number of thread - use ma number of threads
+			// If estimated number of threads in each App instance excceds Max number of thread - use max number of threads
 			if(ProjectConstants.MAX_NUMBER_OF_THREAD < NUMBER_OF_THREAD)
 				NUMBER_OF_THREAD = ProjectConstants.MAX_NUMBER_OF_THREAD;
 			

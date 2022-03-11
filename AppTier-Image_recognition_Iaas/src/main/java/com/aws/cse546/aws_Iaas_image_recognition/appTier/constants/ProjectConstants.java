@@ -42,8 +42,8 @@ public class ProjectConstants {
 
 	public static final Integer MAX_WAIT_TIME_OUT = 20;
 	
-	public static final String PATH_TO_DIRECTORY = "/home/ubuntu/classifier/";
+	public static final String PATH_TO_DIRECTORY = "/home/ec2-user/";
 	
-	public static final String PYTHON_SCRIPT = "image_classification.py";
+	public static final String PYTHON_SCRIPT = "face_recognition.py";
 
 }
