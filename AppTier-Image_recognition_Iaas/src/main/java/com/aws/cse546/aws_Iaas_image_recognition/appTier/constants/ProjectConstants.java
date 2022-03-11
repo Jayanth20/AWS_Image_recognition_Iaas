@@ -37,13 +37,5 @@ public class ProjectConstants {
 	public static final Integer MAX_NUMBER_OF_THREAD = 250; 
 	
 	public static final Integer MAX_NUMBER_OF_ACCEPTED_THREAD = 20;
-	
-	public static final Integer MAX_VISIBILITY_TIMEOUT = 40;
-
-	public static final Integer MAX_WAIT_TIME_OUT = 20;
-	
-	public static final String PATH_TO_DIRECTORY = "/home/ubuntu/classifier/";
-	
-	public static final String PYTHON_SCRIPT = "image_classification.py";
 
 }
