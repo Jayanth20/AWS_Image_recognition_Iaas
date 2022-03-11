@@ -16,24 +16,30 @@ public class AppTierApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(AppTierApplication.class, args);
-
+		
+		// starting number of instances is 1 per App instance
 		Integer NUMBER_OF_THREAD = 1;
 		try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(AppTierConfig.class)) {
 			AWSService awsService = context.getBean(AWSService.class);
 
+			// Getting total number of messages
 			Integer TOTAL_NUMBER_OF_MSG_IN_INPUT_QUEUE = awsService
 					.getTotalNumberOfMessagesInQueue(ProjectConstants.INPUT_QUEUE);
 			
+			// number of threads to run in each App instance
 			if (ProjectConstants.MAX_NUM_OF_APP_INSTANCES < TOTAL_NUMBER_OF_MSG_IN_INPUT_QUEUE) 
 				NUMBER_OF_THREAD = TOTAL_NUMBER_OF_MSG_IN_INPUT_QUEUE / ProjectConstants.MAX_NUM_OF_APP_INSTANCES;
 			
+			// If estimated number of threads in each App instance excceds Max number of thread - use ma number of threads
 			if(ProjectConstants.MAX_NUMBER_OF_THREAD < NUMBER_OF_THREAD)
 				NUMBER_OF_THREAD = ProjectConstants.MAX_NUMBER_OF_THREAD;
 			
+			// Each thread takes care of one request
 			try {
 				for (int t = 0; t < NUMBER_OF_THREAD; t++) {
 					Thread thread = new Thread((Runnable) awsService);
 					thread.start();
+					// move to waited - time out -> in simple words, until this thread dies. no other thread comes into picure
 					thread.join();
 				}
 			}
@@ -50,7 +56,6 @@ public class AppTierApplication {
 				}
 			}
 			
-
 			awsService.terminateInstance();
 			context.close();
 		} catch (Exception e) {
