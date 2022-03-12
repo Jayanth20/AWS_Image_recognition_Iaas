@@ -18,7 +18,7 @@ public class ProjectConstants {
 	// secretKey - The AWS secret access key.
 	public static final String SECRET_ACCESS_KEY = "";
 	
-	public static final String PRIVATE_KEY = "my_key_pair";
+	public static final String PRIVATE_KEY = "my_key_pair_1";
 
 	public static final Regions AWS_REGION = Regions.US_EAST_1;
 
@@ -42,13 +42,18 @@ public class ProjectConstants {
 
 	public static final String RESOURCE_INSTANCE = "instance";
 
-	public static final String USER_DATA = "#!/bin/bash" + "\n" + "cd /home/ec2-user/" + "\n"
+	public static final String USER_DATA = "#!/bin/bash" + "\n"
 			+ "chmod +x AppTier-Image_recognition_Iaas-0.0.1-SNAPSHOT.jar" + "\n" + "java -jar AppTier-Image_recognition_Iaas-0.0.1-SNAPSHOT.jar"; 
 	//User data passed on instance creation to perform some task as soon as instance start.
 
 	public static final Integer MAX_WAIT_TIME_OUT = 20;
 
 	public static final String INPUT_OUTPUT_SEPARATOR = "---";
+
+	public static final String SECURITY_GROUP_ID = "sg-0b16f17eb5dd03e64";
+	
+	public static final List<String> SECURITY_GROUP_LIST = new ArrayList<>(Arrays.asList(SECURITY_GROUP_ID));
+
 	
 	
 }

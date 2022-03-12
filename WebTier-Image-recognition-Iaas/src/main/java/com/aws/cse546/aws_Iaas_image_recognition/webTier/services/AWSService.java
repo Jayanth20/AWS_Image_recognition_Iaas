@@ -154,9 +154,10 @@ public class AWSService implements Runnable{
 			tagsForAppInstance.add(tag);
 			ts.setResourceType(ProjectConstants.RESOURCE_INSTANCE);
 			ts.setTags(tagsForAppInstance);
+			
 
 			RunInstancesRequest runInstancesRequest = new RunInstancesRequest().withImageId(imageId)
-					.withInstanceType(instanceType).withMinCount(minInstances).withMaxCount(maxInstances)
+					.withInstanceType(instanceType).withMinCount(minInstances).withMaxCount(maxInstances).withSecurityGroupIds(ProjectConstants.SECURITY_GROUP_LIST)
 					.withKeyName(ProjectConstants.PRIVATE_KEY).withTagSpecifications(ts)
 					.withUserData(new String(Base64.encode(ProjectConstants.USER_DATA.getBytes("UTF-8")), "UTF-8"));
 

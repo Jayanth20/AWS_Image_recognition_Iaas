@@ -18,7 +18,7 @@ public class ProjectConstants {
 	// secretKey - The AWS secret access key.
 	public static final String SECRET_ACCESS_KEY = "";
 	
-	public static final String PRIVATE_KEY = "my_key_pair";
+	public static final String PRIVATE_KEY = "my_key_pair_1";
 
 	public static final Regions AWS_REGION = Regions.US_EAST_1;
 
