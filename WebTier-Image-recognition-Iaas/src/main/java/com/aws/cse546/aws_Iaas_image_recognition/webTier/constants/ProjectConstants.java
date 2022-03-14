@@ -26,7 +26,7 @@ public class ProjectConstants {
 	
 	public static final Integer MAX_NUM_OF_APP_INSTANCES = 19;
 	
-	public static final String AMI_ID = "ami-0a55e620aa5c79a24"; 
+	public static String AMI_ID = "ami-045cbe0280627074e"; 
 	
 	public static final String INSTANCE_TYPE = "t2.micro";
 	
@@ -42,7 +42,7 @@ public class ProjectConstants {
 
 	public static final String RESOURCE_INSTANCE = "instance";
 
-	public static final String USER_DATA = "#!/bin/bash" + "\n"
+	public static final String USER_DATA = "#!/bin/bash" + "\n" + "cd /home/ec2-user" + "\n"
 			+ "chmod +x AppTier-Image_recognition_Iaas-0.0.1-SNAPSHOT.jar" + "\n" + "java -jar AppTier-Image_recognition_Iaas-0.0.1-SNAPSHOT.jar"; 
 	//User data passed on instance creation to perform some task as soon as instance start.
 
@@ -54,6 +54,6 @@ public class ProjectConstants {
 	
 	public static final List<String> SECURITY_GROUP_LIST = new ArrayList<>(Arrays.asList(SECURITY_GROUP_ID));
 
-	
+	public static final String SQS_MESSAGE_DELIMITER = "--fileName--";
 	
 }

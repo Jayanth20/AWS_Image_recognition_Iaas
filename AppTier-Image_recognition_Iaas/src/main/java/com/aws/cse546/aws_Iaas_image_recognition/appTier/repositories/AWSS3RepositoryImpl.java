@@ -26,7 +26,7 @@ public class AWSS3RepositoryImpl implements AWSS3Repository {
 	public void uploadFile(String key, String value) {
 		try {
 			if (!awsConfigurations.getS3().doesBucketExistV2(ProjectConstants.OUTPUT_BUCKET)) {
-				logger.error("creating a bucket!!!.........!!!");
+				logger.error("********* Result Bucket don't exist ......!!! Creating it. *******");
 				awsConfigurations.getS3().createBucket(ProjectConstants.OUTPUT_BUCKET);
 			}
 
@@ -46,6 +46,28 @@ public class AWSS3RepositoryImpl implements AWSS3Repository {
 			e.printStackTrace();
 		}
 	}
+
+	@Override
+	public void uploadInputImageFile(byte[] imageByte, String fileName) {
+		try {
+		if (!awsConfigurations.getS3().doesBucketExistV2(ProjectConstants.INPUT_BUCKET)) {
+			logger.error("********* Input Bucket don't exist ......!!! Creating it. *******");
+			awsConfigurations.getS3().createBucket(ProjectConstants.INPUT_BUCKET);
+		}
+		
+		ByteArrayInputStream contentsAsStream = new ByteArrayInputStream(imageByte);
+		ObjectMetadata omd = new ObjectMetadata();
+		omd.setContentLength(imageByte.length);
+		awsConfigurations.getS3()
+				.putObject(new PutObjectRequest(ProjectConstants.INPUT_BUCKET, fileName, contentsAsStream, omd));
+		} catch (Exception e) {
+			logger.error("Error in creating Input bucket or storing the image.........!!!");
+			e.printStackTrace();
+		}
+		
+	}
+	
+	
 }
 
 

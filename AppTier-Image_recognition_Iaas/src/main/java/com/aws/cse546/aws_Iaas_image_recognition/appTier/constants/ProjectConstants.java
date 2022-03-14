@@ -45,5 +45,7 @@ public class ProjectConstants {
 	public static final String PATH_TO_DIRECTORY = "/home/ec2-user/";
 	
 	public static final String PYTHON_SCRIPT = "face_recognition.py";
+	
+	public static final String SQS_MESSAGE_DELIMITER = "--fileName--";
 
 }

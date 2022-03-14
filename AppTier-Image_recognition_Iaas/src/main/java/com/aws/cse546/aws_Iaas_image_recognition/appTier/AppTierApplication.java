@@ -1,5 +1,7 @@
 package com.aws.cse546.aws_Iaas_image_recognition.appTier;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -14,6 +16,8 @@ import com.aws.cse546.aws_Iaas_image_recognition.appTier.services.AWSService;
 @EnableAutoConfiguration
 public class AppTierApplication {
 
+	public static Logger logger = LoggerFactory.getLogger(AppTierApplication.class);
+	
 	public static void main(String[] args) {
 		SpringApplication.run(AppTierApplication.class, args);
 		
@@ -34,10 +38,13 @@ public class AppTierApplication {
 			if(ProjectConstants.MAX_NUMBER_OF_THREAD < NUMBER_OF_THREAD)
 				NUMBER_OF_THREAD = ProjectConstants.MAX_NUMBER_OF_THREAD;
 			
+			logger.info("******* Number of threads required : {} **********", NUMBER_OF_THREAD);
+			
 			// Each thread takes care of one request
 			try {
 				for (int t = 0; t < NUMBER_OF_THREAD; t++) {
 					Thread thread = new Thread((Runnable) awsService);
+					logger.info("******* Started thread : {} *******", t+1);
 					thread.start();
 					// move to waited - time out -> in simple words, until this thread dies. no other thread comes into picure
 					thread.join();
@@ -47,6 +54,7 @@ public class AppTierApplication {
 				try {
 					for (int t = 0; t < ProjectConstants.MAX_NUMBER_OF_ACCEPTED_THREAD; t++) {
 						Thread thread = new Thread((Runnable) awsService);
+						logger.info("******* Started thread : {} *********", t+1);
 						thread.start();
 						thread.join();
 					}
@@ -56,6 +64,7 @@ public class AppTierApplication {
 				}
 			}
 			
+			logger.info("************* Terminated the instance *************");
 			awsService.terminateInstance();
 			context.close();
 		} catch (Exception e) {

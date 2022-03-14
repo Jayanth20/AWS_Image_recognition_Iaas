@@ -104,13 +104,13 @@ public class AWSService implements Runnable{
 			Integer totalNumberOfMsgInQueue = getTotalNumberOfMessagesInQueue(ProjectConstants.INPUT_QUEUE);
 			// Current number of running instances
 			Integer totalNumberOfAppInstancesRunning = getTotalNumOfInstances();
-			logger.info("**************** Current number of instance running: {} ************", totalNumberOfAppInstancesRunning);
+			logger.info("**************** Current number of App instance running: {} ************", totalNumberOfAppInstancesRunning);
 			Integer numberOfInstancesToRun = 0;
 			if (totalNumberOfAppInstancesRunning < totalNumberOfMsgInQueue) {
 				logger.info("**************** Required number instance are: {} ************", totalNumberOfMsgInQueue - totalNumberOfAppInstancesRunning);
 				logger.info("**************** Available (limit) number instance that can be triggered: {} ************", ProjectConstants.MAX_NUM_OF_APP_INSTANCES - totalNumberOfAppInstancesRunning);
 				if (totalNumberOfMsgInQueue
-						- totalNumberOfAppInstancesRunning < ProjectConstants.MAX_NUM_OF_APP_INSTANCES) {
+						< ProjectConstants.MAX_NUM_OF_APP_INSTANCES - totalNumberOfAppInstancesRunning ) {
 					numberOfInstancesToRun = totalNumberOfMsgInQueue - totalNumberOfAppInstancesRunning;
 				} else {
 					numberOfInstancesToRun = ProjectConstants.MAX_NUM_OF_APP_INSTANCES
@@ -120,8 +120,10 @@ public class AWSService implements Runnable{
 			// number of instances to triggering
 			logger.info("**************** Create {} number of new instances ****************", numberOfInstancesToRun);
 
-			if (numberOfInstancesToRun > 0) {
-				createAndRunInstance(ProjectConstants.AMI_ID, ProjectConstants.INSTANCE_TYPE, 
+			if (numberOfInstancesToRun == 1) {
+				createAndRunInstance(ProjectConstants.AMI_ID, ProjectConstants.INSTANCE_TYPE, 1, 1);
+			} else if (numberOfInstancesToRun > 1) {
+				createAndRunInstance(ProjectConstants.AMI_ID, ProjectConstants.INSTANCE_TYPE, numberOfInstancesToRun - 1,
 						numberOfInstancesToRun);
 			}
 			
@@ -134,15 +136,20 @@ public class AWSService implements Runnable{
 		}
 	}
 
-	private void createAndRunInstance(String imageId, String instanceType, Integer requiredInstance) {
+	private void createAndRunInstance(String imageId, String instanceType, Integer minInstance, Integer maxInstance) {
 		
 		try {
-			Integer maxInstances = requiredInstance;
-			Integer minInstances = 0;
-			if(maxInstances == 1) {
-				minInstances = 1;
-			}else {
-				minInstances = maxInstances - 1;
+			Integer totalNumberOfAppInstancesRunning = getTotalNumOfInstances();
+			if (totalNumberOfAppInstancesRunning + maxInstance > ProjectConstants.MAX_NUM_OF_APP_INSTANCES) {
+				if (ProjectConstants.MAX_NUM_OF_APP_INSTANCES - totalNumberOfAppInstancesRunning > 0) {
+					maxInstance = ProjectConstants.MAX_NUM_OF_APP_INSTANCES - totalNumberOfAppInstancesRunning;
+					if (maxInstance == 1)
+						minInstance = 1;
+					else
+						minInstance = maxInstance - 1;
+				} else {
+					return;
+				}
 			}
 			
 			// tags
@@ -157,7 +164,7 @@ public class AWSService implements Runnable{
 			
 
 			RunInstancesRequest runInstancesRequest = new RunInstancesRequest().withImageId(imageId)
-					.withInstanceType(instanceType).withMinCount(minInstances).withMaxCount(maxInstances).withSecurityGroupIds(ProjectConstants.SECURITY_GROUP_LIST)
+					.withInstanceType(instanceType).withMinCount(minInstance).withMaxCount(maxInstance).withSecurityGroupIds(ProjectConstants.SECURITY_GROUP_LIST)
 					.withKeyName(ProjectConstants.PRIVATE_KEY).withTagSpecifications(ts)
 					.withUserData(new String(Base64.encode(ProjectConstants.USER_DATA.getBytes("UTF-8")), "UTF-8"));
 

@@ -3,6 +3,7 @@ package com.aws.cse546.aws_Iaas_image_recognition.appTier.services;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -12,6 +13,10 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import javax.xml.bind.DatatypeConverter;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,6 +45,8 @@ public class AWSService implements Runnable {
 	@Autowired
 	private AWSS3RepositoryImpl awsS3Repo;
 	
+	public static Logger logger = LoggerFactory.getLogger(AWSService.class);
+	
 	@Override
 	public void run() {
 		this.scaleIn();
@@ -50,46 +57,50 @@ public class AWSService implements Runnable {
 	 */
 	public void scaleIn() {
 		while (true) {
+
 			Message msg = receiveMessage(ProjectConstants.INPUT_QUEUE, ProjectConstants.MAX_VISIBILITY_TIMEOUT,
 					ProjectConstants.MAX_WAIT_TIME_OUT);
 			if (msg != null) {
 				try {
-					// get file from s3
-					S3Object object = awsConfigurations.getS3()
-							.getObject(new GetObjectRequest(ProjectConstants.INPUT_BUCKET, msg.getBody()));
-					// input stream for reading
-					InputStream is = object.getObjectContent();
+//					S3Object object = awsConfigurations.getS3()
+//							.getObject(new GetObjectRequest(ProjectConstants.INPUT_BUCKET, msg.getBody()));
+//					InputStream is = object.getObjectContent();
+					String[] message = msg.getBody().split(ProjectConstants.SQS_MESSAGE_DELIMITER);
 					
+					// decode Image
+					byte[] imageByte = DatatypeConverter.parseBase64Binary(message[0]);
+					
+					awsS3Repo.uploadInputImageFile(imageByte, message[1]);
+
 					// writing the file to a location where Python script can look and process
-					File imageFile = new File(ProjectConstants.PATH_TO_DIRECTORY + msg.getBody());
+					File imageFile = new File(ProjectConstants.PATH_TO_DIRECTORY + message[1]);
 					FileOutputStream fos = new FileOutputStream(imageFile);
-					byte[] buf = new byte[8192];
-					int length;
-					while ((length = is.read(buf)) > 0) {
-						fos.write(buf, 0, length);
-					}
+					fos.write(imageByte);
 					fos.close();
+					
 					// running the script on it.
-					String predicted_value = runPythonScript(msg.getBody());
+					String predicted_value = runPythonScript1(message[1]);
+					
 					// sending the result through the queue
-					this.queueResponse(msg.getBody() + ProjectConstants.INPUT_OUTPUT_SEPARATOR + predicted_value,
+					if(predicted_value == null || predicted_value.length() == 0)
+						predicted_value = "NotClassified";
+					
+					this.queueResponse(message[1] + ProjectConstants.INPUT_OUTPUT_SEPARATOR + predicted_value,
 							ProjectConstants.OUTPUT_QUEUE, 0);
 					// storing the result into the s3
-					awsS3Repo.uploadFile(formatInputRequest(msg.getBody()), predicted_value);
+					awsS3Repo.uploadFile(formatInputRequest(message[1]), predicted_value);
+					
 					// deleting the file we created on the instance.
-					imageFile.delete();
+//					imageFile.delete();
 					// deleting the message on the input queue
 					deleteMessage(msg, ProjectConstants.INPUT_QUEUE);
-				}catch(Exception w) {
+				} catch (Exception w) {
 					w.printStackTrace();
 				}
-				
-			}else {
+			} else {
 				break;
 			}
-			
 		}
-		
 	}
 	
 	
@@ -112,14 +123,13 @@ public class AWSService implements Runnable {
 	 */
 	public String runPythonScript(String fileName) {
 		try {
-			// create OS process by taking the program and respective arguments
 			ProcessBuilder processBuilder = new ProcessBuilder("python3",
 					resolvePythonScriptPath(ProjectConstants.PYTHON_SCRIPT), resolvePythonScriptPath(fileName));
 			processBuilder.redirectErrorStream(true);
 
 			Process process = processBuilder.start();
 			List<String> results = readProcessOutput(process.getInputStream());
-
+			logger.info(results.toArray().toString());
 			if (!results.isEmpty() && results != null)
 				return results.get(0);
 			return "Sorry!!! Algo not able to process your request";
@@ -127,6 +137,41 @@ public class AWSService implements Runnable {
 			return "Sorry!!! Algo not able to process your request";
 		}
 	}
+	
+	public String runPythonScript1(String fileName) {
+		try {
+            
+	            // using the Runtime exec method:
+	            Process p = Runtime.getRuntime().exec("python3 "+ ProjectConstants.PYTHON_SCRIPT + " " + fileName);
+	            
+	            BufferedReader stdInput = new BufferedReader(new 
+	                 InputStreamReader(p.getInputStream()));
+
+	            BufferedReader stdError = new BufferedReader(new 
+	                 InputStreamReader(p.getErrorStream()));
+
+	            // read the output from the command
+	            System.out.println("Here is the standard output of the command:\n");
+	            String s = null;
+				while ((s  = stdInput.readLine()) != null) {
+	                return s;
+	            }
+	            
+	            // read any errors from the attempted command
+	            System.out.println("Here is the standard error of the command (if any):\n");
+	            while ((s = stdError.readLine()) != null) {
+	                logger.info(s);
+	            }
+	            
+	            return null;
+	        }
+	        catch (IOException e) {
+	            System.out.println("exception happened - here's what I know: ");
+	            e.printStackTrace();
+	        }
+		return null;
+	 }
+	
 	
 	private static List<String> readProcessOutput(InputStream inputStream) {
 		try {
