@@ -41,6 +41,7 @@ public class AWSS3RepositoryImpl implements AWSS3Repository {
 			omd.setContentLength(contentAsBytes.length);
 			awsConfigurations.getS3()
 					.putObject(new PutObjectRequest(ProjectConstants.OUTPUT_BUCKET, key, contentsAsStream, omd));
+			logger.info("Uploaded the result into output bucket!");
 		} catch (Exception e) {
 			logger.error("Error in creating bucket.........!!!");
 			e.printStackTrace();
@@ -60,6 +61,7 @@ public class AWSS3RepositoryImpl implements AWSS3Repository {
 		omd.setContentLength(imageByte.length);
 		awsConfigurations.getS3()
 				.putObject(new PutObjectRequest(ProjectConstants.INPUT_BUCKET, fileName, contentsAsStream, omd));
+		logger.info("Uploaded the input image into input bucket!");
 		} catch (Exception e) {
 			logger.error("Error in creating Input bucket or storing the image.........!!!");
 			e.printStackTrace();

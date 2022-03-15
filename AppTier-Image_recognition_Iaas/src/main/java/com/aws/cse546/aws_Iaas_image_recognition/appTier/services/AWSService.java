@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -65,10 +66,13 @@ public class AWSService implements Runnable {
 //					S3Object object = awsConfigurations.getS3()
 //							.getObject(new GetObjectRequest(ProjectConstants.INPUT_BUCKET, msg.getBody()));
 //					InputStream is = object.getObjectContent();
+					logger.info("Got the Message!");
 					String[] message = msg.getBody().split(ProjectConstants.SQS_MESSAGE_DELIMITER);
+					logger.info("Decrypting....!");
 					
 					// decode Image
 					byte[] imageByte = DatatypeConverter.parseBase64Binary(message[0]);
+					
 					
 					awsS3Repo.uploadInputImageFile(imageByte, message[1]);
 
@@ -78,21 +82,27 @@ public class AWSService implements Runnable {
 					fos.write(imageByte);
 					fos.close();
 					
+					logger.info("running the script with {}..!", message[1]);
 					// running the script on it.
-					String predicted_value = runPythonScript1(message[1]);
+					String predicted_value = runPythonScript3(message[1]);
 					
 					// sending the result through the queue
 					if(predicted_value == null || predicted_value.length() == 0)
 						predicted_value = "NotClassified";
 					
+					logger.info("predicted_value = {}", predicted_value);
+					
 					this.queueResponse(message[1] + ProjectConstants.INPUT_OUTPUT_SEPARATOR + predicted_value,
 							ProjectConstants.OUTPUT_QUEUE, 0);
+					
+					logger.info("Storing to s3...!");
 					// storing the result into the s3
 					awsS3Repo.uploadFile(formatInputRequest(message[1]), predicted_value);
 					
 					// deleting the file we created on the instance.
 //					imageFile.delete();
 					// deleting the message on the input queue
+					logger.info("deleting the message in Queue!");
 					deleteMessage(msg, ProjectConstants.INPUT_QUEUE);
 				} catch (Exception w) {
 					w.printStackTrace();
@@ -105,6 +115,7 @@ public class AWSService implements Runnable {
 	
 	
 	public void deleteMessage(Message message, String queueName) {
+		logger.info("Deleting the message in input queue!");
 		String queueUrl = awsConfigurations.getSQSService().getQueueUrl(queueName).getQueueUrl();
 		String messageReceiptHandle = message.getReceiptHandle();
 		DeleteMessageRequest deleteMessageRequest = new DeleteMessageRequest(queueUrl, messageReceiptHandle);
@@ -117,28 +128,7 @@ public class AWSService implements Runnable {
 		return fileName.substring(firstIndex + 1, lastIndex);
 	}
 	
-	
-	/*
-	 * Run python script present on app instance to classify image using process builder.
-	 */
-	public String runPythonScript(String fileName) {
-		try {
-			ProcessBuilder processBuilder = new ProcessBuilder("python3",
-					resolvePythonScriptPath(ProjectConstants.PYTHON_SCRIPT), resolvePythonScriptPath(fileName));
-			processBuilder.redirectErrorStream(true);
-
-			Process process = processBuilder.start();
-			List<String> results = readProcessOutput(process.getInputStream());
-			logger.info(results.toArray().toString());
-			if (!results.isEmpty() && results != null)
-				return results.get(0);
-			return "Sorry!!! Algo not able to process your request";
-		} catch (Exception e) {
-			return "Sorry!!! Algo not able to process your request";
-		}
-	}
-	
-	public String runPythonScript1(String fileName) {
+	public String runPythonScript2(String fileName) {
 		try {
             
 	            // using the Runtime exec method:
@@ -173,14 +163,101 @@ public class AWSService implements Runnable {
 	 }
 	
 	
+	/*
+	 * Run python script present on app instance to classify image using process builder.
+	 */
+	/*
+	 * Run python script present on app instance to classify image using process builder.
+	 * Remember, process is heavier than thread -> you can improve this using different libraries to carry out 
+	 * cross out 
+	 */
+	public String runPythonScript(String fileName) {
+		try {
+			
+			ProcessBuilder processBuilder = new ProcessBuilder("python3",
+					resolvePythonScriptPath(ProjectConstants.PYTHON_SCRIPT), resolvePythonScriptPath(fileName));
+			processBuilder.redirectErrorStream(true);
+			logger.info("Started...the script!");
+			Process process = processBuilder.start();
+			List<String> results = readProcessOutput(process.getInputStream());
+
+			if (!results.isEmpty() && results != null)
+				return results.get(0);
+			logger.info("returning empty string exit 1");
+			return "ScriptIssue";
+		} catch (Exception e) {
+			logger.info("returning empty string exit 2");
+			return "ScriptIssue";
+		}
+	}
+	
+	// script 3 is working
+	public String runPythonScript3(String fileName) {
+		try {
+			
+			ProcessBuilder processBuilder = new ProcessBuilder("python3",
+					resolvePythonScriptPath(ProjectConstants.PYTHON_SCRIPT), resolvePythonScriptPath(fileName));
+			processBuilder.redirectErrorStream(true);
+			logger.info("Started...the script!");
+			Process process = processBuilder.start();
+			List<String> results = readProcessOutput(process.getInputStream());
+
+			StringBuilder r = new StringBuilder("");
+			for(String i: results) {
+				if(i!= null) {
+					r.append(i.trim());
+				}
+			}
+			logger.info("returning {} ", r.toString());
+			return r.toString();
+		} catch (Exception e) {
+			logger.info("returning empty string exit 2");
+			return "ScriptIssue";
+		}
+	}
+	
+	
+	public String runPythonScript1(String fileName) {
+            try {
+    	        ProcessBuilder pb = new ProcessBuilder("python3",
+    					resolvePythonScriptPath(ProjectConstants.PYTHON_SCRIPT), resolvePythonScriptPath(fileName));
+    	        Process p = pb.start();
+    	        BufferedReader stdInput = new BufferedReader(new 
+    	                InputStreamReader(p.getInputStream()));
+    	        StringBuilder sb = new StringBuilder();
+    	        try {
+    	        	while(p.isAlive()) {
+    	        		String k = stdInput.readLine();
+    	        		if(k != null && k.length() > 0) {
+    	        			logger.info("pulled {}",k);
+    	        			sb.append(k.trim());
+    	        		}
+        	        }
+    	        	logger.info("Result : {}", sb.toString());
+    	        	return sb.toString();
+    	        }catch(Exception e) {
+    	        	logger.info("Some Error...!");
+    	        }
+    	        
+    	    } catch (IOException e) {
+    	    	logger.info("Error running Python command");
+    	    }
+			return "NotRecognized";
+	 }
+	
+	
 	private static List<String> readProcessOutput(InputStream inputStream) {
 		try {
 			BufferedReader output = new BufferedReader(new InputStreamReader(inputStream));
-			return output.lines().collect(Collectors.toList());
+			logger.info("Trying to read all lines!");
+			List<String> k = output.lines().collect(Collectors.toList());
+			logger.info("result:  {}", Arrays.toString(k.toArray()));
+			return k;
 		} catch (Exception e) {
-			return new ArrayList<>(Arrays.asList("No Prediction"));
+			return new ArrayList<>(Arrays.asList("NotRecognized"));
 		}
 	}
+
 	
 	private static String resolvePythonScriptPath(String filename) {
 		File file = new File(ProjectConstants.PATH_TO_DIRECTORY + filename);
@@ -201,6 +278,7 @@ public class AWSService implements Runnable {
 		queueUrl = awsConfigurations.getSQSService().getQueueUrl(queueName).getQueueUrl();
 		awsConfigurations.getSQSService().sendMessage(new SendMessageRequest().withQueueUrl(queueUrl)
 				.withMessageGroupId(UUID.randomUUID().toString()).withMessageBody(message).withDelaySeconds(0));
+		logger.info("Message sent to output queue!");
 	}
 
 	private Message receiveMessage(String queueName, Integer maxVisibilityTimeout, Integer maxWaitTimeOut) {

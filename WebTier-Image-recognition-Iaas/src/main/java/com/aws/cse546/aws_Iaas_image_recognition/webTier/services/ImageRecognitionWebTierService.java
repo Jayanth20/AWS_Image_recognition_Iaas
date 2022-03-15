@@ -27,7 +27,7 @@ public class ImageRecognitionWebTierService implements Runnable {
 	@Autowired
 	private AWSService awsService;
 	
-	private Map<String, String> outputMap = new HashMap<>();
+	public Map<String, String> outputMap = new HashMap<>();
 	
 	public Map<String, String> getOutputMap() {
 		return outputMap;
@@ -37,34 +37,7 @@ public class ImageRecognitionWebTierService implements Runnable {
 		this.outputMap = outputMap;
 	}
 
-	public String[] getOutputFromResponseQueue(String imageUrl) {
-		System.out.println("ImageURL: " + imageUrl);
-		while (true) {
-			try {
-				System.out.println("Trying....!");
-				if (this.outputMap.containsKey(imageUrl)) {
-					System.out.println("got in" + imageUrl);
-					logger.info("Got the image with URL - {}", imageUrl);
-					String output = this.outputMap.get(imageUrl);
-					this.outputMap.remove(imageUrl);
-					return new String[] { this.formatImageUrl(imageUrl), output };
-				} else {
-					try {
-						Thread.sleep(2000);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-			} catch (Exception e) {
-				System.out.println("Some Error while getting outPut from HashMap");
-				try {
-					Thread.sleep(1000);
-				} catch (Exception o) {
-					o.printStackTrace();
-				}
-			}
-		}
-	}
+	
 	
 	
 	public String formatImageUrl(String imageUrl) {
@@ -155,5 +128,39 @@ public class ImageRecognitionWebTierService implements Runnable {
 
         return encodedfile;
 	}
+
+//	public String[] getRecognitionResult(String fileName) {
+//		String[] output = awsService.getOutputFromResponseQueue(fileName);
+//		return output;
+//	}
+	
+	public String[] getOutputFromResponseQueue(String imageUrl){
+		System.out.println("ImageURL: " + imageUrl);
+		while (true) {
+			try {
+				if (this.outputMap.containsKey(imageUrl)) {
+					System.out.println("got in" + imageUrl);
+					logger.info("Got the image with URL - {}", imageUrl);
+					String output = this.outputMap.get(imageUrl);
+					this.outputMap.remove(imageUrl);
+					return new String[] { this.formatImageUrl(imageUrl), output };
+				} else {
+					try {
+						Thread.sleep(2000);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			} catch (Exception e) {
+				System.out.println("Some Error while getting outPut from HashMap");
+				try {
+					Thread.sleep(1000);
+				} catch (Exception o) {
+					o.printStackTrace();
+				}
+			}
+		}
+	}
+	
 
 }

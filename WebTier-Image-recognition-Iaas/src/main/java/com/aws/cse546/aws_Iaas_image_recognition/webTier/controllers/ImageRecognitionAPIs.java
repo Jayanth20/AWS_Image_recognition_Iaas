@@ -8,6 +8,8 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,7 +21,7 @@ import com.aws.cse546.aws_Iaas_image_recognition.webTier.services.AWSService;
 import com.aws.cse546.aws_Iaas_image_recognition.webTier.services.ImageRecognitionWebTierService;
 
 
-@RestController
+@Controller
 public class ImageRecognitionAPIs {
 	
 	@Autowired
@@ -28,13 +30,14 @@ public class ImageRecognitionAPIs {
 	@Autowired
 	private ImageRecognitionWebTierService webTierService;
 	
-	@GetMapping("/test")
-	public String getHello() {
-		return "Hello";
+	@GetMapping("/home")
+	public String greeting(@RequestParam(name = "name", required = false, defaultValue = "World") String name,
+			Model model) {
+		return "imagerecognization";
 	}
 	
-	@PostMapping("/imagesRecognition/Upload")
-	public Map<String, String> getNameFromImage(@RequestParam(name = "imageurl", required = true) MultipartFile[] files){
+	@PostMapping("/imagerecognization")
+	public String  getImageUrl(@RequestParam(name = "imageurl", required = true) MultipartFile[] files, Map<String, Object> model){
 		
 		// If you provide the name of an existing queue along with the exact names and values of all the queue's attributes, CreateQueue returns the queue URL for the existing queue.
 		awsService.createQueue(ProjectConstants.OUTPUT_QUEUE);
@@ -57,15 +60,11 @@ public class ImageRecognitionAPIs {
 		System.out.println(imageSet);
 		
 		for(String fileName: imageSet) {
-			while(!webTierService.getOutputMap().containsKey(fileName)) {
-				
-			}
-			String result = webTierService.getOutputMap().get(fileName);
-			System.out.println("Got the file: " + fileName + " with : "+ result);
-			recognitionResult.put(fileName, result);
+			String[] result = webTierService.getOutputFromResponseQueue(fileName);
+			recognitionResult.put(result[0],result[1]);
 		}
-		System.out.println(recognitionResult.size());
-		return recognitionResult;
+		model.put("classificationResult", recognitionResult);
+		return "result";
 	}
 	
 
