@@ -90,7 +90,18 @@ public class AWSService implements Runnable {
 					if(predicted_value == null || predicted_value.length() == 0)
 						predicted_value = "NotClassified";
 					
-					logger.info("predicted_value = {}", predicted_value);
+					//-------
+					// assuming guaranteed %
+					String[] predicted_values = predicted_value.split("%");
+					if(predicted_value.length() > 0) {
+						predicted_value = predicted_values[predicted_values.length-1];
+						logger.info("predicted_value = {}", predicted_value);
+					}
+					
+					
+					if(predicted_value == null || predicted_value.length() == 0)
+						predicted_value = "NotClassified";
+					//--------
 					
 					this.queueResponse(message[1] + ProjectConstants.INPUT_OUTPUT_SEPARATOR + predicted_value,
 							ProjectConstants.OUTPUT_QUEUE, 0);

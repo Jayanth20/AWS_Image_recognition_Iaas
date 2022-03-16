@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.aws.cse546.aws_Iaas_image_recognition.webTier.constants.ProjectConstants;
 import com.aws.cse546.aws_Iaas_image_recognition.webTier.services.AWSService;
 import com.aws.cse546.aws_Iaas_image_recognition.webTier.services.ImageRecognitionWebTierService;
+import com.aws.cse546.aws_Iaas_image_recognition.webTier.store.OutputResponses;
 
 
 @Controller
@@ -45,7 +46,7 @@ public class ImageRecognitionAPIs {
 		Set<String> imageSet = new HashSet<>(); 
 		Map<String,String> recognitionResult = new HashMap<>();
 		
-		int preSize = webTierService.getOutputMap().size();
+		int preSize = OutputResponses.getLength();
 		
 		for(MultipartFile file: files) {
 			String fileName = webTierService.createUniqueFileName(file);
@@ -59,11 +60,23 @@ public class ImageRecognitionAPIs {
 		
 		System.out.println(imageSet);
 		
-		for(String fileName: imageSet) {
-			String[] result = webTierService.getOutputFromResponseQueue(fileName);
-			recognitionResult.put(result[0],result[1]);
+//		for(String fileName: imageSet) {
+//			String[] result = webTierService.getOutputFromResponseQueue(fileName);
+//			recognitionResult.put(result[0],result[1]);
+//		}
+		
+		System.out.println(imageSet.size() + preSize);
+		while(true) {
+			if(OutputResponses.getLength() == imageSet.size() + preSize) {
+				for(String fileName: imageSet) {
+					String result = OutputResponses.output.get(fileName);
+					recognitionResult.put(fileName, result);
+				}
+				break;
+			}
 		}
-		model.put("classificationResult", recognitionResult);
+		
+		model.put("recognitionResult", recognitionResult);
 		return "result";
 	}
 	

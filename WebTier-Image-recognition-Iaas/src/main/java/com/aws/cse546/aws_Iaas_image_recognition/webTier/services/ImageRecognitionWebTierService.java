@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.amazonaws.services.sqs.model.Message;
 import com.aws.cse546.aws_Iaas_image_recognition.webTier.constants.ProjectConstants;
+import com.aws.cse546.aws_Iaas_image_recognition.webTier.store.OutputResponses;
 
 @Service
 public class ImageRecognitionWebTierService implements Runnable {
@@ -27,19 +28,10 @@ public class ImageRecognitionWebTierService implements Runnable {
 	@Autowired
 	private AWSService awsService;
 	
-	public Map<String, String> outputMap = new HashMap<>();
-	
-	public Map<String, String> getOutputMap() {
-		return outputMap;
-	}
+//	public Map<String, String> outputMap = new HashMap<>();
+//	public ListenerMap<String, String> outputMap = new ListenerMap<>();
 
-	public void setOutputMap(Map<String, String> outputMap) {
-		this.outputMap = outputMap;
-	}
 
-	
-	
-	
 	public String formatImageUrl(String imageUrl) {
 		int firstIndex = imageUrl.indexOf('-');
 		int lastIndex = imageUrl.lastIndexOf('.');
@@ -49,7 +41,7 @@ public class ImageRecognitionWebTierService implements Runnable {
 	
 	@Override
 	public void run() {
-		logger.info("**************** Listening on the output Queue for messages from App **************** ");
+		logger.info("Listening on the output Queue for messages from App ");
 		this.putOutputFromResponseQueueToHashMap();
 	}
 
@@ -65,13 +57,13 @@ public class ImageRecognitionWebTierService implements Runnable {
 							logger.info(msg.getBody());
 							classificationResult = msg.getBody().split(ProjectConstants.INPUT_OUTPUT_SEPARATOR);
 							if(classificationResult.length > 1) {
-								outputMap.put(classificationResult[0], classificationResult[1]);
-								logger.info("Received Message from response queue: {}", classificationResult[0]+ " - "+ classificationResult[1]);
+								OutputResponses.output.put(classificationResult[0], classificationResult[1]);
+								logger.warn("********** Received Message from response queue: {}", classificationResult[0]+ " - "+ classificationResult[1]);
+//								logger.warn(outputMap.keySet().toString());
 								awsService.deleteMessage(msg, ProjectConstants.OUTPUT_QUEUE);
 							}else {
 								logger.error("Message is not proper");
 							}
-								
 						}
 					} catch (Exception w) {
 						logger.info("Error in putting message from queue to map");
@@ -134,33 +126,33 @@ public class ImageRecognitionWebTierService implements Runnable {
 //		return output;
 //	}
 	
-	public String[] getOutputFromResponseQueue(String imageUrl){
-		System.out.println("ImageURL: " + imageUrl);
-		while (true) {
-			try {
-				if (this.outputMap.containsKey(imageUrl)) {
-					System.out.println("got in" + imageUrl);
-					logger.info("Got the image with URL - {}", imageUrl);
-					String output = this.outputMap.get(imageUrl);
-					this.outputMap.remove(imageUrl);
-					return new String[] { this.formatImageUrl(imageUrl), output };
-				} else {
-					try {
-						Thread.sleep(2000);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-			} catch (Exception e) {
-				System.out.println("Some Error while getting outPut from HashMap");
-				try {
-					Thread.sleep(1000);
-				} catch (Exception o) {
-					o.printStackTrace();
-				}
-			}
-		}
-	}
+//	public String[] getOutputFromResponseQueue(String imageUrl){
+//		logger.warn("********* ImageURL: " + imageUrl);
+//		while (true) {
+//			try {
+//				if (this.outputMap.containsKey(imageUrl)) {
+//					System.out.println("got in" + imageUrl);
+//					logger.info("Got the image with URL - {}", imageUrl);
+//					String output = this.outputMap.get(imageUrl);
+//					this.outputMap.remove(imageUrl);
+//					return new String[] { this.formatImageUrl(imageUrl), output };
+//				} else {
+//					try {
+//						Thread.sleep(2000);
+//					} catch (Exception e) {
+//						e.printStackTrace();
+//					}
+//				}
+//			} catch (Exception e) {
+//				System.out.println("Some Error while getting outPut from HashMap");
+//				try {
+//					Thread.sleep(1000);
+//				} catch (Exception o) {
+//					o.printStackTrace();
+//				}
+//			}
+//		}
+//	}
 	
 
 }

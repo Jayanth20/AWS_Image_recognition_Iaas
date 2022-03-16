@@ -49,7 +49,7 @@ public class AWSService implements Runnable{
 	
 	@Override
 	public void run() {
-		logger.info("**************** Starting AWSService thread ****************");
+		logger.info("Starting AWSService thread");
 		this.scaleOut();
 	}
 
@@ -107,11 +107,11 @@ public class AWSService implements Runnable{
 			Integer totalNumberOfMsgInQueue = getTotalNumberOfMessagesInQueue(ProjectConstants.INPUT_QUEUE);
 			// Current number of running instances
 			Integer totalNumberOfAppInstancesRunning = getTotalNumOfInstances();
-			logger.info("**************** Current number of App instance running: {} ************", totalNumberOfAppInstancesRunning);
+			logger.info("Current number of App instance running: {} ", totalNumberOfAppInstancesRunning);
 			Integer numberOfInstancesToRun = 0;
 			if (totalNumberOfAppInstancesRunning < totalNumberOfMsgInQueue) {
-				logger.info("**************** Required number instance are: {} ************", totalNumberOfMsgInQueue - totalNumberOfAppInstancesRunning);
-				logger.info("**************** Available (limit) number instance that can be triggered: {} ************", ProjectConstants.MAX_NUM_OF_APP_INSTANCES - totalNumberOfAppInstancesRunning);
+				logger.info("Required number instance are: {} ", totalNumberOfMsgInQueue - totalNumberOfAppInstancesRunning);
+				logger.info("Available (limit) number instance that can be triggered: {}", ProjectConstants.MAX_NUM_OF_APP_INSTANCES - totalNumberOfAppInstancesRunning);
 				if (totalNumberOfMsgInQueue
 						< ProjectConstants.MAX_NUM_OF_APP_INSTANCES - totalNumberOfAppInstancesRunning ) {
 					numberOfInstancesToRun = totalNumberOfMsgInQueue - totalNumberOfAppInstancesRunning;
@@ -121,7 +121,7 @@ public class AWSService implements Runnable{
 				}
 			}
 			// number of instances to triggering
-			logger.info("**************** Create {} number of new instances ****************", numberOfInstancesToRun);
+			logger.info("Create {} number of new instances", numberOfInstancesToRun);
 
 			if (numberOfInstancesToRun == 1) {
 				createAndRunInstance(ProjectConstants.AMI_ID, ProjectConstants.INSTANCE_TYPE, 1, 1);
@@ -131,7 +131,7 @@ public class AWSService implements Runnable{
 			}
 			
 			try {
-				logger.info("**************** Timed Waiting - AWSService thread: {} milli seconds  ****************", 2000);
+				logger.info("Timed Waiting - AWSService thread: {} milli seconds ", 2000);
 				Thread.sleep(2000);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -181,7 +181,7 @@ public class AWSService implements Runnable{
 	}
 
 	private Integer getTotalNumOfInstances() {
-		logger.info("****************  Get All instances status ****************");
+		logger.info("Get All instances status ");
 		DescribeInstanceStatusRequest describeInstanceStatusRequest = new DescribeInstanceStatusRequest();
 		describeInstanceStatusRequest.setIncludeAllInstances(true);
 		DescribeInstanceStatusResult describeInstances = awsConfigurations.getEC2Service()
@@ -227,7 +227,7 @@ public class AWSService implements Runnable{
 //	}
 
 	private Integer getTotalNumberOfMessagesInQueue(String queueName) {
-		logger.info("**************** Getting total Number of Messages in Queue **************** ");
+		logger.info("Getting total Number of Messages in Queue ");
 		String queueUrl = null;
 
 		try {
@@ -240,11 +240,11 @@ public class AWSService implements Runnable{
 		GetQueueAttributesRequest getQueueAttributesRequest = new GetQueueAttributesRequest(queueUrl,
 				ProjectConstants.SQS_METRICS);
 		
-		logger.info("**************** Getting Queue Attributes **************** ");
+		logger.info(" Getting Queue Attributes ");
 		Map<String, String> map = awsConfigurations.getSQSService().getQueueAttributes(getQueueAttributesRequest)
 				.getAttributes();
 		
-		logger.info("**************** Total Number of Messages in Queue: {} **************** ", map.get(ProjectConstants.TOTAL_MSG_IN_SQS));
+		logger.info("Total Number of Messages in Queue: {} ", map.get(ProjectConstants.TOTAL_MSG_IN_SQS));
 		
 		return Integer.parseInt((String) map.get(ProjectConstants.TOTAL_MSG_IN_SQS));
 	}
@@ -260,7 +260,7 @@ public class AWSService implements Runnable{
 					.receiveMessage(receiveMessageRequest);
 			List<Message> messageList = receiveMessageResult.getMessages();
 			if (messageList.isEmpty()) {
-				logger.info("**************** No messages in output Queue!!! **************** ");
+				logger.info("No messages in output Queue!!! ");
 				return null;
 			}
 			return messageList;
