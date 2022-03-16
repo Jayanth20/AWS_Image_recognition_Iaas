@@ -92,11 +92,11 @@ public class AWSService implements Runnable {
 					
 					//-------
 					// assuming guaranteed %
-					String[] predicted_values = predicted_value.split("%");
-					if(predicted_value.length() > 0) {
-						predicted_value = predicted_values[predicted_values.length-1];
-						logger.info("predicted_value = {}", predicted_value);
-					}
+//					String[] predicted_values = predicted_value.split("%");
+//					if(predicted_value.length() > 0) {
+//						predicted_value = predicted_values[predicted_values.length-1];
+//						logger.info("predicted_value = {}", predicted_value);
+//					}
 					
 					
 					if(predicted_value == null || predicted_value.length() == 0)
@@ -215,12 +215,12 @@ public class AWSService implements Runnable {
 
 			StringBuilder r = new StringBuilder("");
 			for(String i: results) {
-				if(i!= null) {
+				if(i!= null && !i.contains("%")) {
 					r.append(i.trim());
 				}
 			}
-			logger.info("returning {} ", r.toString());
-			return r.toString();
+			logger.info("returning {} ", r.toString().trim());
+			return r.toString().trim();
 		} catch (Exception e) {
 			logger.info("returning empty string exit 2");
 			return "ScriptIssue";

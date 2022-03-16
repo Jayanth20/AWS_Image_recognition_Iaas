@@ -26,7 +26,7 @@ public class ProjectConstants {
 	
 	public static final Integer MAX_NUM_OF_APP_INSTANCES = 19;
 	
-	public static String AMI_ID = "ami-03b4b11c141496985"; 
+	public static String AMI_ID = "ami-0806e575d6924d70a"; 
 	
 	public static final String INSTANCE_TYPE = "t2.micro";
 	

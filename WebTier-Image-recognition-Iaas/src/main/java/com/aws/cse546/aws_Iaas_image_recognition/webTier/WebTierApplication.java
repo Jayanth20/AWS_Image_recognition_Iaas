@@ -9,11 +9,8 @@ import com.aws.cse546.aws_Iaas_image_recognition.webTier.constants.ProjectConsta
 import com.aws.cse546.aws_Iaas_image_recognition.webTier.services.AWSService;
 import com.aws.cse546.aws_Iaas_image_recognition.webTier.services.ImageRecognitionWebTierService;
 
-
-
 @SpringBootApplication
 public class WebTierApplication {
-
 
 	public static void main(String[] args) {
 		SpringApplication.run(WebTierApplication.class, args);

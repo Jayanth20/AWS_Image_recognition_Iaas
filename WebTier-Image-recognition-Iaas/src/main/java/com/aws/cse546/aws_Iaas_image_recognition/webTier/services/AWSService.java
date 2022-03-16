@@ -107,6 +107,9 @@ public class AWSService implements Runnable{
 			Integer totalNumberOfMsgInQueue = getTotalNumberOfMessagesInQueue(ProjectConstants.INPUT_QUEUE);
 			// Current number of running instances
 			Integer totalNumberOfAppInstancesRunning = getTotalNumOfInstances();
+			if(totalNumberOfAppInstancesRunning != 0) {
+				totalNumberOfAppInstancesRunning--;
+			}
 			logger.info("Current number of App instance running: {} ", totalNumberOfAppInstancesRunning);
 			Integer numberOfInstancesToRun = 0;
 			if (totalNumberOfAppInstancesRunning < totalNumberOfMsgInQueue) {
@@ -197,34 +200,6 @@ public class AWSService implements Runnable{
 		
 		return total;
 	}
-	
-//	public String[] getOutputFromResponseQueue(String imageUrl) {
-//		System.out.println("ImageURL: " + imageUrl);
-//		while (true) {
-//			try {
-//				if (imageRecognitionWebTierService.outputMap.containsKey(imageUrl)) {
-//					System.out.println("got in" + imageUrl);
-//					logger.info("Got the image with URL - {}", imageUrl);
-//					String output = imageRecognitionWebTierService.outputMap.get(imageUrl);
-//					imageRecognitionWebTierService.outputMap.remove(imageUrl);
-//					return new String[] { imageRecognitionWebTierService.formatImageUrl(imageUrl), output };
-//				} else {
-//					try {
-//						Thread.sleep(2000);
-//					} catch (Exception e) {
-//						e.printStackTrace();
-//					}
-//				}
-//			} catch (Exception e) {
-//				System.out.println("Some Error while getting outPut from HashMap");
-//				try {
-//					Thread.sleep(1000);
-//				} catch (Exception o) {
-//					o.printStackTrace();
-//				}
-//			}
-//		}
-//	}
 
 	private Integer getTotalNumberOfMessagesInQueue(String queueName) {
 		logger.info("Getting total Number of Messages in Queue ");
