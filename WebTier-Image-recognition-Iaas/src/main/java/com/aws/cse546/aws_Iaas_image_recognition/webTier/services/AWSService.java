@@ -106,10 +106,7 @@ public class AWSService implements Runnable{
 			// total Messages in queue
 			Integer totalNumberOfMsgInQueue = getTotalNumberOfMessagesInQueue(ProjectConstants.INPUT_QUEUE);
 			// Current number of running instances
-			Integer totalNumberOfAppInstancesRunning = getTotalNumOfInstances();
-			if(totalNumberOfAppInstancesRunning != 0) {
-				totalNumberOfAppInstancesRunning--;
-			}
+			Integer totalNumberOfAppInstancesRunning = getTotalNumOfInstances() - 1;
 			logger.info("Current number of App instance running: {} ", totalNumberOfAppInstancesRunning);
 			Integer numberOfInstancesToRun = 0;
 			if (totalNumberOfAppInstancesRunning < totalNumberOfMsgInQueue) {
