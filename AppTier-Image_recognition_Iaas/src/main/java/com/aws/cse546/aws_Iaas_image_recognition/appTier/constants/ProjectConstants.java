@@ -8,9 +8,9 @@ import com.amazonaws.regions.Regions;
 
 public class ProjectConstants {
 	
-	public static final String INPUT_QUEUE = "inputQueue.fifo";
+	public static final String REQUEST_QUEUE = "RequestQueue.fifo";
 
-	public static final String OUTPUT_QUEUE = "outputQueue.fifo";
+	public static final String RESPONSE_QUEUE = "ResponseQueue.fifo";
 	
 	// accessKey - The AWS access key.
 	public static final String ACCESS_KEY_ID = "";		 
@@ -18,13 +18,13 @@ public class ProjectConstants {
 	// secretKey - The AWS secret access key.
 	public static final String SECRET_ACCESS_KEY = "";
 	
-	public static final String PRIVATE_KEY = "my_key_pair_1";
+	public static final String KEY_PAIR = "my_key_pair_1";
 
 	public static final Regions AWS_REGION = Regions.US_EAST_1;
 
-	public static final String INPUT_BUCKET = "image-input-bucket-cse546-version-1";
+	public static final String INPUT_BUCKET = "ccproj-group40-input-bucket-cse546";
 	
-	public static final String OUTPUT_BUCKET = "image-output-bucket-cce546-version-1";
+	public static final String OUTPUT_BUCKET = "ccproj-group40-output-bucket-cse546";
 	
 	public static final String TOTAL_MSG_IN_SQS = "ApproximateNumberOfMessages";
 

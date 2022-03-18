@@ -8,9 +8,9 @@ import com.amazonaws.regions.Regions;
 
 public class ProjectConstants {
 
-	public static final String INPUT_QUEUE = "inputQueue.fifo";
+	public static final String REQUEST_QUEUE = "RequestQueue.fifo";
 
-	public static final String OUTPUT_QUEUE = "outputQueue.fifo";
+	public static final String REPONSE_QUEUE = "ResponseQueue.fifo";
 	
 	// accessKey - The AWS access key.
 	public static final String ACCESS_KEY_ID = "";		 
@@ -18,15 +18,13 @@ public class ProjectConstants {
 	// secretKey - The AWS secret access key.
 	public static final String SECRET_ACCESS_KEY = "";
 	
-	public static final String PRIVATE_KEY = "my_key_pair_1";
+	public static final String KEY_PAIR = "my_key_pair_1";
 
 	public static final Regions AWS_REGION = Regions.US_EAST_1;
-
-	public static final String INPUT_BUCKET = "image-input-bucket-cse546-version-1";
 	
 	public static final Integer MAX_NUM_OF_APP_INSTANCES = 19;
 	
-	public static String AMI_ID = "ami-0806e575d6924d70a"; 
+	public static String AMI_ID = "ami-0181fe27bea5432b8"; 
 	
 	public static final String INSTANCE_TYPE = "t2.micro";
 	
