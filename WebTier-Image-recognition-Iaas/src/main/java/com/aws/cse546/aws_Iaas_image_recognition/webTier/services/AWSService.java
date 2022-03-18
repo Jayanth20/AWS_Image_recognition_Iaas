@@ -1,6 +1,5 @@
 package com.aws.cse546.aws_Iaas_image_recognition.webTier.services;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -30,23 +29,16 @@ import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.amazonaws.util.Base64;
 import com.aws.cse546.aws_Iaas_image_recognition.webTier.configurations.AWSConfigurations;
 import com.aws.cse546.aws_Iaas_image_recognition.webTier.constants.ProjectConstants;
-import com.aws.cse546.aws_Iaas_image_recognition.webTier.repositories.AWSS3Repository;
 
 
 @Service
 public class AWSService implements Runnable{
-
-	@Autowired
-	private AWSS3Repository s3Repo;
 	
 	public static Logger logger = LoggerFactory.getLogger(AWSService.class);
 	
 	@Autowired
 	private AWSConfigurations awsConfigurations;
-	
-	@Autowired
-	private ImageRecognitionWebTierService imageRecognitionWebTierService;
-	
+
 	@Override
 	public void run() {
 		logger.info("Starting AWSService thread");
@@ -75,14 +67,6 @@ public class AWSService implements Runnable{
 		}
 	}
 
-	public void uploadFileToS3(File file, String fileName) {
-		try {
-			s3Repo.uploadFile(fileName, file);
-			file.delete();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
 	
 	public void queueInputRequest(String url, String queueName, int delay) {
 		String queueUrl = null;
@@ -104,7 +88,7 @@ public class AWSService implements Runnable{
 	public void scaleOut() {
 		while (true) {
 			// total Messages in queue
-			Integer totalNumberOfMsgInQueue = getTotalNumberOfMessagesInQueue(ProjectConstants.INPUT_QUEUE);
+			Integer totalNumberOfMsgInQueue = getTotalNumberOfMessagesInQueue(ProjectConstants.REQUEST_QUEUE);
 			// Current number of running instances
 			Integer totalNumberOfAppInstancesRunning = getTotalNumOfInstances() - 1;
 			logger.info("Current number of App instance running: {} ", totalNumberOfAppInstancesRunning);
@@ -126,7 +110,7 @@ public class AWSService implements Runnable{
 			if (numberOfInstancesToRun == 1) {
 				createAndRunInstance(ProjectConstants.AMI_ID, ProjectConstants.INSTANCE_TYPE, 1, 1);
 			} else if (numberOfInstancesToRun > 1) {
-				createAndRunInstance(ProjectConstants.AMI_ID, ProjectConstants.INSTANCE_TYPE, numberOfInstancesToRun - 1,
+				createAndRunInstance(ProjectConstants.AMI_ID, ProjectConstants.INSTANCE_TYPE, 1,
 						numberOfInstancesToRun);
 			}
 			
@@ -142,7 +126,7 @@ public class AWSService implements Runnable{
 	private void createAndRunInstance(String imageId, String instanceType, Integer minInstance, Integer maxInstance) {
 		
 		try {
-			Integer totalNumberOfAppInstancesRunning = getTotalNumOfInstances();
+			Integer totalNumberOfAppInstancesRunning = getTotalNumOfInstances()-1;
 			if (totalNumberOfAppInstancesRunning + maxInstance > ProjectConstants.MAX_NUM_OF_APP_INSTANCES) {
 				if (ProjectConstants.MAX_NUM_OF_APP_INSTANCES - totalNumberOfAppInstancesRunning > 0) {
 					maxInstance = ProjectConstants.MAX_NUM_OF_APP_INSTANCES - totalNumberOfAppInstancesRunning;
@@ -168,7 +152,7 @@ public class AWSService implements Runnable{
 
 			RunInstancesRequest runInstancesRequest = new RunInstancesRequest().withImageId(imageId)
 					.withInstanceType(instanceType).withMinCount(minInstance).withMaxCount(maxInstance).withSecurityGroupIds(ProjectConstants.SECURITY_GROUP_LIST)
-					.withKeyName(ProjectConstants.PRIVATE_KEY).withTagSpecifications(ts)
+					.withKeyName(ProjectConstants.KEY_PAIR).withTagSpecifications(ts)
 					.withUserData(new String(Base64.encode(ProjectConstants.USER_DATA.getBytes("UTF-8")), "UTF-8"));
 
 			awsConfigurations.getEC2Service().runInstances(runInstancesRequest);

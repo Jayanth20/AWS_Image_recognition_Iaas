@@ -5,9 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
@@ -27,17 +25,12 @@ public class ImageRecognitionWebTierService implements Runnable {
 	
 	@Autowired
 	private AWSService awsService;
-	
-//	public Map<String, String> outputMap = new HashMap<>();
-//	public ListenerMap<String, String> outputMap = new ListenerMap<>();
-
 
 	public String formatImageUrl(String imageUrl) {
 		int firstIndex = imageUrl.indexOf('-');
 		int lastIndex = imageUrl.lastIndexOf('.');
 		return imageUrl.substring(firstIndex + 1, lastIndex);
 	}
-	
 	
 	@Override
 	public void run() {
@@ -49,7 +42,7 @@ public class ImageRecognitionWebTierService implements Runnable {
 		while (true) {
 			List<Message> msgList = null;
 			try {
-				msgList = awsService.receiveMessage(ProjectConstants.OUTPUT_QUEUE, 20, ProjectConstants.MAX_WAIT_TIME_OUT, 10);
+				msgList = awsService.receiveMessage(ProjectConstants.REPONSE_QUEUE, 40, ProjectConstants.MAX_WAIT_TIME_OUT, 10);
 				if (msgList != null) {
 					try {
 						for (Message msg : msgList) {
@@ -60,7 +53,7 @@ public class ImageRecognitionWebTierService implements Runnable {
 								OutputResponses.output.put(classificationResult[0], classificationResult[1]);
 								logger.warn("********** Received Message from response queue: {}", classificationResult[0]+ " - "+ classificationResult[1]);
 //								logger.warn(outputMap.keySet().toString());
-								awsService.deleteMessage(msg, ProjectConstants.OUTPUT_QUEUE);
+								awsService.deleteMessage(msg, ProjectConstants.REPONSE_QUEUE);
 							}else {
 								logger.error("Message is not proper");
 							}

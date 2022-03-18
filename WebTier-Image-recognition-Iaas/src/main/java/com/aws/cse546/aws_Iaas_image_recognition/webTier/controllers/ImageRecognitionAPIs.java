@@ -34,42 +34,26 @@ public class ImageRecognitionAPIs {
 	@GetMapping("/home")
 	public String greeting(@RequestParam(name = "name", required = false, defaultValue = "World") String name,
 			Model model) {
-		return "imagerecognization";
+		return "facerecognization";
 	}
 	
-	@PostMapping("/imagerecognization")
+	@PostMapping("/face_recognition")
 	public String  getImageUrl(@RequestParam(name = "imageurl", required = true) MultipartFile[] files, Map<String, Object> model){
 		
 		// If you provide the name of an existing queue along with the exact names and values of all the queue's attributes, CreateQueue returns the queue URL for the existing queue.
-		awsService.createQueue(ProjectConstants.OUTPUT_QUEUE);
+		awsService.createQueue(ProjectConstants.REPONSE_QUEUE);
 		
 		Set<String> imageSet = new HashSet<>(); 
 		Map<String,String> recognitionResult = new HashMap<>();
 		
-		int preSize = OutputResponses.getLength();
-		
 		for(MultipartFile file: files) {
 			String fileName = webTierService.createUniqueFileName(file);
-//			awsService.uploadFileToS3(webTierService.convertMultiPartToFile(file), fileName);
 			File fileContent = webTierService.convertMultiPartToFile(file);
 			String queueInput = webTierService.getBase64OutofImage(fileContent);
 			// Web to App tier
-			awsService.queueInputRequest(queueInput+ ProjectConstants.SQS_MESSAGE_DELIMITER+fileName, ProjectConstants.INPUT_QUEUE, 0);
+			awsService.queueInputRequest(queueInput+ ProjectConstants.SQS_MESSAGE_DELIMITER+fileName, ProjectConstants.REQUEST_QUEUE, 0);
 			imageSet.add(fileName);
 		}
-		
-//		System.out.println(imageSet);
-//		
-//		System.out.println(imageSet.size() + preSize);
-//		while(true) {
-//			if(OutputResponses.getLength() == imageSet.size() + preSize) {
-//				for(String fileName: imageSet) {
-//					String result = OutputResponses.output.get(fileName);
-//					recognitionResult.put(fileName, result);
-//				}
-//				break;
-//			}
-//		}
 		
 		while(true) {
 			for(String i: imageSet) {

@@ -26,7 +26,7 @@ h4 {
 	margin-bottom: 20px;
 	font-size: 16px;
 	font-weight: 700;
-	color: rgb(47, 147, 123);
+	color: #000000;
 }
 p{
 	font-size: 13px;
@@ -56,7 +56,6 @@ a:focus{
 
 /* Home Style */
 #tf-home{
-	background: url(../img/01.jpg);
 	background-size: cover;
 	background-position: center;
 	background-attachment: fixed;
@@ -85,9 +84,9 @@ a:focus{
 	margin-bottom: 0;
 	background: transparent;
 	border: 0;
-	color: #fff !important;
+	color: #000 !important;
 	padding: 2% 0;
-	transition: all 0.5s;
+	text-align: center;
 }
 #sticky {
     padding: 0.5ex;
@@ -119,7 +118,7 @@ a:focus{
 }
 
 .logo {
-	font-family: 'Playball', cursive;
+	font-family: sans-serif;
 }
 
 #tf-service{
@@ -159,15 +158,16 @@ a.btn {
 }
 button.btn.btn-primary.my-btn,
 a.btn.btn-primary.my-btn {
-	background: #2F937B;
-	border-color: transparent;
-	border-radius: 0px;
-	border-width: 2px;
-	padding: 10px 30px;
-	text-transform: uppercase;
-	font-size: 12px;
-	letter-spacing: 1px;
-	font-weight: 600;
+	background: #114bc5;
+    border-color: transparent;
+    border-radius: 0px;
+    border-width: 2px;
+    padding: 10px 30px;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 1px;
+    font-weight: 600;
+    color: white;
 }
 button.btn.btn-primary.my-btn:hover,
 a.btn.btn-primary.my-btn:hover{

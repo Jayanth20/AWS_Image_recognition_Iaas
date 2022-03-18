@@ -28,7 +28,7 @@ public class AppTierApplication {
 
 			// Getting total number of messages
 			Integer TOTAL_NUMBER_OF_MSG_IN_INPUT_QUEUE = awsService
-					.getTotalNumberOfMessagesInQueue(ProjectConstants.INPUT_QUEUE);
+					.getTotalNumberOfMessagesInQueue(ProjectConstants.REQUEST_QUEUE);
 			
 			// number of threads to run in each App instance
 			if (ProjectConstants.MAX_NUM_OF_APP_INSTANCES < TOTAL_NUMBER_OF_MSG_IN_INPUT_QUEUE) 

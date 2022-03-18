@@ -59,7 +59,7 @@ public class AWSService implements Runnable {
 	public void scaleIn() {
 		while (true) {
 
-			Message msg = receiveMessage(ProjectConstants.INPUT_QUEUE, ProjectConstants.MAX_VISIBILITY_TIMEOUT,
+			Message msg = receiveMessage(ProjectConstants.REQUEST_QUEUE, ProjectConstants.MAX_VISIBILITY_TIMEOUT,
 					ProjectConstants.MAX_WAIT_TIME_OUT);
 			if (msg != null) {
 				try {
@@ -104,7 +104,7 @@ public class AWSService implements Runnable {
 					//--------
 					
 					this.queueResponse(message[1] + ProjectConstants.INPUT_OUTPUT_SEPARATOR + predicted_value,
-							ProjectConstants.OUTPUT_QUEUE, 0);
+							ProjectConstants.RESPONSE_QUEUE, 0);
 					
 					logger.info("Storing to s3...!");
 					// storing the result into the s3
@@ -114,7 +114,7 @@ public class AWSService implements Runnable {
 //					imageFile.delete();
 					// deleting the message on the input queue
 					logger.info("deleting the message in Queue!");
-					deleteMessage(msg, ProjectConstants.INPUT_QUEUE);
+					deleteMessage(msg, ProjectConstants.REQUEST_QUEUE);
 				} catch (Exception w) {
 					w.printStackTrace();
 				}
@@ -139,40 +139,40 @@ public class AWSService implements Runnable {
 		return fileName.substring(firstIndex + 1, lastIndex);
 	}
 	
-	public String runPythonScript2(String fileName) {
-		try {
-            
-	            // using the Runtime exec method:
-	            Process p = Runtime.getRuntime().exec("python3 "+ ProjectConstants.PYTHON_SCRIPT + " " + fileName);
-	            
-	            BufferedReader stdInput = new BufferedReader(new 
-	                 InputStreamReader(p.getInputStream()));
-
-	            BufferedReader stdError = new BufferedReader(new 
-	                 InputStreamReader(p.getErrorStream()));
-
-	            // read the output from the command
-	            System.out.println("Here is the standard output of the command:\n");
-	            String s = null;
-				while ((s  = stdInput.readLine()) != null) {
-	                return s;
-	            }
-	            
-	            // read any errors from the attempted command
-	            System.out.println("Here is the standard error of the command (if any):\n");
-	            while ((s = stdError.readLine()) != null) {
-	                logger.info(s);
-	            }
-	            
-	            return null;
-	        }
-	        catch (IOException e) {
-	            System.out.println("exception happened - here's what I know: ");
-	            e.printStackTrace();
-	        }
-		return null;
-	 }
-	
+//	public String runPythonScript2(String fileName) {
+//		try {
+//            
+//	            // using the Runtime exec method:
+//	            Process p = Runtime.getRuntime().exec("python3 "+ ProjectConstants.PYTHON_SCRIPT + " " + fileName);
+//	            
+//	            BufferedReader stdInput = new BufferedReader(new 
+//	                 InputStreamReader(p.getInputStream()));
+//
+//	            BufferedReader stdError = new BufferedReader(new 
+//	                 InputStreamReader(p.getErrorStream()));
+//
+//	            // read the output from the command
+//	            System.out.println("Here is the standard output of the command:\n");
+//	            String s = null;
+//				while ((s  = stdInput.readLine()) != null) {
+//	                return s;
+//	            }
+//	            
+//	            // read any errors from the attempted command
+//	            System.out.println("Here is the standard error of the command (if any):\n");
+//	            while ((s = stdError.readLine()) != null) {
+//	                logger.info(s);
+//	            }
+//	            
+//	            return null;
+//	        }
+//	        catch (IOException e) {
+//	            System.out.println("exception happened - here's what I know: ");
+//	            e.printStackTrace();
+//	        }
+//		return null;
+//	 }
+//	
 	
 	/*
 	 * Run python script present on app instance to classify image using process builder.
@@ -182,25 +182,25 @@ public class AWSService implements Runnable {
 	 * Remember, process is heavier than thread -> you can improve this using different libraries to carry out 
 	 * cross out 
 	 */
-	public String runPythonScript(String fileName) {
-		try {
-			
-			ProcessBuilder processBuilder = new ProcessBuilder("python3",
-					resolvePythonScriptPath(ProjectConstants.PYTHON_SCRIPT), resolvePythonScriptPath(fileName));
-			processBuilder.redirectErrorStream(true);
-			logger.info("Started...the script!");
-			Process process = processBuilder.start();
-			List<String> results = readProcessOutput(process.getInputStream());
-
-			if (!results.isEmpty() && results != null)
-				return results.get(0);
-			logger.info("returning empty string exit 1");
-			return "ScriptIssue";
-		} catch (Exception e) {
-			logger.info("returning empty string exit 2");
-			return "ScriptIssue";
-		}
-	}
+//	public String runPythonScript(String fileName) {
+//		try {
+//			
+//			ProcessBuilder processBuilder = new ProcessBuilder("python3",
+//					resolvePythonScriptPath(ProjectConstants.PYTHON_SCRIPT), resolvePythonScriptPath(fileName));
+//			processBuilder.redirectErrorStream(true);
+//			logger.info("Started...the script!");
+//			Process process = processBuilder.start();
+//			List<String> results = readProcessOutput(process.getInputStream());
+//
+//			if (!results.isEmpty() && results != null)
+//				return results.get(0);
+//			logger.info("returning empty string exit 1");
+//			return "ScriptIssue";
+//		} catch (Exception e) {
+//			logger.info("returning empty string exit 2");
+//			return "ScriptIssue";
+//		}
+//	}
 	
 	// script 3 is working
 	public String runPythonScript3(String fileName) {
@@ -228,33 +228,33 @@ public class AWSService implements Runnable {
 	}
 	
 	
-	public String runPythonScript1(String fileName) {
-            try {
-    	        ProcessBuilder pb = new ProcessBuilder("python3",
-    					resolvePythonScriptPath(ProjectConstants.PYTHON_SCRIPT), resolvePythonScriptPath(fileName));
-    	        Process p = pb.start();
-    	        BufferedReader stdInput = new BufferedReader(new 
-    	                InputStreamReader(p.getInputStream()));
-    	        StringBuilder sb = new StringBuilder();
-    	        try {
-    	        	while(p.isAlive()) {
-    	        		String k = stdInput.readLine();
-    	        		if(k != null && k.length() > 0) {
-    	        			logger.info("pulled {}",k);
-    	        			sb.append(k.trim());
-    	        		}
-        	        }
-    	        	logger.info("Result : {}", sb.toString());
-    	        	return sb.toString();
-    	        }catch(Exception e) {
-    	        	logger.info("Some Error...!");
-    	        }
-    	        
-    	    } catch (IOException e) {
-    	    	logger.info("Error running Python command");
-    	    }
-			return "NotRecognized";
-	 }
+//	public String runPythonScript1(String fileName) {
+//            try {
+//    	        ProcessBuilder pb = new ProcessBuilder("python3",
+//    					resolvePythonScriptPath(ProjectConstants.PYTHON_SCRIPT), resolvePythonScriptPath(fileName));
+//    	        Process p = pb.start();
+//    	        BufferedReader stdInput = new BufferedReader(new 
+//    	                InputStreamReader(p.getInputStream()));
+//    	        StringBuilder sb = new StringBuilder();
+//    	        try {
+//    	        	while(p.isAlive()) {
+//    	        		String k = stdInput.readLine();
+//    	        		if(k != null && k.length() > 0) {
+//    	        			logger.info("pulled {}",k);
+//    	        			sb.append(k.trim());
+//    	        		}
+//        	        }
+//    	        	logger.info("Result : {}", sb.toString());
+//    	        	return sb.toString();
+//    	        }catch(Exception e) {
+//    	        	logger.info("Some Error...!");
+//    	        }
+//    	        
+//    	    } catch (IOException e) {
+//    	    	logger.info("Error running Python command");
+//    	    }
+//			return "NotRecognized";
+//	 }
 	
 	
 	private static List<String> readProcessOutput(InputStream inputStream) {
