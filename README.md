@@ -29,10 +29,10 @@ To test the application run the following command:
 Python3 multithread_workload_generator_verify_results_updated.py --num_request 100 --url http://ec2-52-87-139-44.compute-1.amazonaws.com:8080/getfacerecognizationperImage --image_folder face_images_100/
 
 ## Team Members
-Sai Charan Papani - 1222323895
-Jayanth Kumar Tumuluri - 1221727325
-Lakshmi Venu Raghu Ram Makkapati - 
-Sarath Chandra Mahamkali - 1222281736
+- Sai Charan Papani - 1222323895
+- Jayanth Kumar Tumuluri - 1221727325
+- Lakshmi Venu Raghu Ram Makkapati - 
+- Sarath Chandra Mahamkali - 1222281736
 
 ## Useful Links
 - https://spring.io/guides/gs/multi-module/
